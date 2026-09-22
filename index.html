@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4559db">
+<title>Blisstech Check charge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f4f8; --card:#ffffff; --sunk:#f7f8fb;
+    --ink:#1f2330; --ink-2:#4a4f5e; --muted:#7a7f8e; --line:#d9dbe3; --line-2:#c6c9d3;
+    --blue:#4559db; --blue-dark:#3446c4; --blue-soft:#eef0fc; --blue-line:#cfd5f6;
+    --green:#1f9d63; --green-bg:#e6f6ee;
+    --yellow:#b7860b; --yellow-bg:#fdf4dc;
+    --red:#d24b43; --red-bg:#fdecea;
+    --shadow:0 1px 3px rgba(31,35,48,.06),0 6px 20px rgba(31,35,48,.05);
+    --th:"Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--th);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+  button{font:inherit;cursor:pointer;border:0;color:inherit}
+  button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .wrap{max-width:1280px;margin:0 auto;padding:16px}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px}
+  .logo{width:40px;height:40px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .brand b{font-size:16px;font-weight:700;display:block;line-height:1.3}
+  .brand small{font-size:12.5px;color:var(--muted)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+  h1{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:800;line-height:1.2;color:var(--blue)}
+  h1::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px var(--blue-soft);flex-shrink:0}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{height:44px;padding:0 18px;border-radius:10px;font-weight:600;font-size:15px;background:var(--blue);color:#fff}
+  .btn:hover{background:var(--blue-dark)}
+  .btn.outline{background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .btn.outline:hover{background:var(--blue-soft)}
+  .btn:active{transform:scale(.98)}
+
+  .search{position:relative;margin-top:16px}
+  .search input{width:100%;height:58px;padding:0 52px;border-radius:10px;border:1px solid var(--line-2);background:#fff;font:inherit;font-size:18px;color:var(--ink)}
+  .search input::placeholder{color:var(--muted)}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .search .ico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--muted)}
+  .search .clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:8px;background:var(--blue-soft);color:var(--blue);font-weight:700;display:none}
+  .search.has .clear{display:block}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:4px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--line-2);background:#fff;font-weight:600;font-size:15px;white-space:nowrap;flex-shrink:0;color:var(--ink-2)}
+  .chip:hover{border-color:var(--blue);color:var(--blue)}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .chip .n{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+  .chip.on .n{color:rgba(255,255,255,.75)}
+  .yhead{grid-column:1/-1;display:flex;align-items:center;gap:12px;font-size:17px;font-weight:700;color:var(--blue);margin:12px 2px 0}
+  .yhead::after{content:"";flex:1;height:1px;background:var(--line)}
+  .yhead:first-child{margin-top:0}
+
+  .meta{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;margin-top:14px;font-size:14px;color:var(--ink-2)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+  .list{margin-top:16px;display:grid;gap:12px}
+  .phone{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .phone.new{border-color:var(--blue-line)}
+  .row1{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .bname{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+  .tag{font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;border:1px solid transparent}
+  .y-old{background:var(--sunk);color:var(--muted);border-color:var(--line)}
+  .y-mid{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+  .y-new{background:var(--blue-soft);color:var(--blue);border-color:var(--blue-line)}
+  .t-new,.t-newest{background:var(--blue);color:#fff}
+  .t-est{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
+  .model{font-size:21px;font-weight:800;line-height:1.25;margin-top:6px;color:var(--ink)}
+  .tech{font-size:13px;color:var(--muted);margin-top:2px}
+  .status{flex-shrink:0;font-size:14px;font-weight:700;padding:5px 12px;border-radius:8px}
+  .s-green{background:var(--green-bg);color:var(--green)}
+  .s-yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .s-red{background:var(--red-bg);color:var(--red)}
+
+  .watts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .w{border-radius:12px;padding:12px 14px;border:1px solid var(--line)}
+  .w.dark{background:var(--sunk)}
+  .w.light{background:var(--blue-soft);border-color:var(--blue-line)}
+  .w small{font-size:13px;font-weight:600;color:var(--ink-2)}
+  .w.light small{color:var(--blue)}
+  .w .num{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-top:2px}
+  .w b{font-size:42px;font-weight:800;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .w.light b{color:var(--blue)}
+  .w b i{font-style:normal;font-size:20px;font-weight:700;margin-left:1px;opacity:.7}
+  .w .status{font-size:12.5px;padding:3px 9px;margin-bottom:6px}
+  .note{margin-top:12px;border-radius:10px;background:var(--sunk);border:1px solid var(--line);padding:10px 12px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .note b{color:var(--ink);font-weight:700}
+  .src{display:inline-block;font-size:12px;color:var(--muted);margin:-2px 0 10px 2px}
+  .src:hover{color:var(--blue)}
+  .copy{margin-top:12px;width:100%;height:50px;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;font-size:16px}
+  .copy:hover{background:var(--blue-dark)}
+  .copy:active{transform:scale(.98)}
+  .phone .copy{margin-top:auto}
+  .phone .note{margin-bottom:10px}
+
+  @media (min-width:900px){ .list{grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:1200px){ .list{grid-template-columns:repeat(3,1fr)} }
+
+  .empty{text-align:center;padding:60px 16px;display:none}
+  .empty b{font-size:20px}
+  .empty p{color:var(--muted);margin:8px 0 18px}
+
+  .guide{margin-top:20px;display:grid;gap:10px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .guide div{display:flex;gap:10px;align-items:flex-start}
+  .guide .status{min-width:70px;text-align:center}
+  footer{text-align:center;font-size:12.5px;color:var(--muted);padding:28px 0 40px}
+
+  .modal{position:fixed;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .modal .bg{position:absolute;inset:0;background:rgba(31,35,48,.45);backdrop-filter:blur(3px)}
+  .sheet{position:relative;width:100%;max-width:520px;background:var(--card);border-radius:16px 16px 0 0;padding:22px;animation:up .22s ease}
+  @media (min-width:640px){.modal{align-items:center}.sheet{border-radius:16px}}
+  @keyframes up{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.sheet{animation:none}.toast{transition:none}}
+  .sheet h3{font-size:20px;font-weight:800;color:var(--blue);padding-right:44px}
+  .sheet .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .sheet textarea{width:100%;min-height:220px;margin-top:14px;border-radius:10px;border:1px solid var(--line-2);background:#fff;padding:14px;font:inherit;font-size:15px;line-height:1.65;color:var(--ink);resize:vertical}
+  .sheet textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .sheet .row{display:flex;gap:10px;margin-top:14px}
+  .sheet .row .copy{margin:0;flex:1}
+  .sheet .row .btn{height:50px;background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .x{position:absolute;right:16px;top:16px;width:34px;height:34px;border-radius:8px;background:var(--sunk);border:1px solid var(--line)!important;color:var(--ink-2)}
+
+  .toast{position:fixed;left:50%;top:20px;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:50;background:var(--ink);color:#fff;font-weight:600;font-size:15px;padding:11px 20px;border-radius:10px;transition:.2s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M13.5 2 4.5 13.5h6L9.5 22l10-12.5h-6.2L13.5 2z"/></svg></div>
+    <div class="brand">
+      <b>Blisstech Check charge</b>
+      <small id="headCount">เช็ครุ่นมือถือ ชาร์จกับหัว PD ได้กี่วัตต์</small>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel">
+    <div class="top">
+      <h1>เช็ครุ่นชาร์จจริง</h1>
+      <div class="actions">
+        <button class="btn" id="btnImg">บันทึกเป็นรูป</button>
+        <button class="btn outline" id="btnCsv">ดาวน์โหลด CSV</button>
+      </div>
+    </div>
+
+    <div class="search" id="searchBox">
+      <span class="ico">⌕</span>
+      <input id="q" type="search" autocomplete="off" placeholder="พิมพ์หรือวางข้อความ เช่น ไอโฟน 15 โปรแม็ก, s25u, reno8">
+      <button class="clear" id="clearQ" aria-label="ล้าง">✕</button>
+    </div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="meta">
+      <div id="count"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--green)"></i>ได้เต็ม ≥30W</span>
+        <span><i class="dot" style="background:var(--yellow)"></i>ได้กลาง 18–29W</span>
+        <span><i class="dot" style="background:var(--red)"></i>ได้ช้า &lt;18W</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="list" id="list"></section>
+
+  <div class="empty" id="empty">
+    <b>ไม่เจอรุ่นที่ค้นหา</b>
+    <p>ลองพิมพ์ใหม่ เช่น 12 Pro Max, S21 Ultra, Reno 6, P50 Pro</p>
+    <button class="btn" id="resetAll">ล้างตัวกรอง</button>
+  </div>
+
+  <section class="panel guide">
+    <div><span class="status s-green">ได้เต็ม</span><span><b>≥30W</b> ชาร์จเร็ว ใกล้เคียงหัวแท้ ใช้หัว PD/PPS ของร้านได้เลย</span></div>
+    <div><span class="status s-yellow">ได้กลาง</span><span><b>18–29W</b> เร็วระดับกลาง ลูกค้ารอได้ แนะนำหัว PD 100W ที่รองรับ PPS</span></div>
+    <div><span class="status s-red">ได้ช้า</span><span><b>&lt;18W</b> ชาร์จได้ ไม่พัง แต่ช้า ถ้าอยากได้เร็วต้องใช้หัวแท้ของยี่ห้อนั้น</span></div>
+    <div><span class="tag t-est" style="min-width:64px;text-align:center;padding:4px 8px">ค่าประมาณ</span><span>ยังไม่มีผลทดสอบกับหัวทั่วไป ตัวเลขตั้งไว้ค่อนข้างต่ำเพื่อไม่ให้บอกลูกค้าเกินจริง</span></div>
+    <div style="color:var(--muted)">ตัวเลขทั้งหมดคิดจากหัว PD ที่รองรับ PPS · Samsung 45W, Xiaomi/OPPO รุ่นใหม่ ต้องใช้สาย 5A ถึงจะได้วัตต์สูงสุด</div>
+  </section>
+
+  <footer id="foot"></footer>
+</main>
+
+<div class="modal" id="modal">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <button class="x" data-close aria-label="ปิด">✕</button>
+    <h3 id="mTitle"></h3>
+    <div class="sub">คัดลอกให้แล้ว แก้ข้อความในกล่องได้ก่อนส่ง</div>
+    <textarea id="mText"></textarea>
+    <div class="row">
+      <button class="copy" id="mCopy">คัดลอกอีกครั้ง</button>
+      <button class="btn" data-close>ปิด</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  var BRANDS = ["iPhone","Samsung","OPPO","Xiaomi","Vivo","Honor","OnePlus","Realme","Huawei","Laptop"];
+  var BRAND_LABEL = {Xiaomi:"Xiaomi · Redmi · POCO", Vivo:"Vivo · iQOO", Laptop:"แล็ปท็อป / แท็บเล็ต"};
+
+  var phones = (window.PHONES || []).slice();
+  var state = {q:"", filter:"all"};
+  var shown = [];
+
+  var $ = function(id){return document.getElementById(id)};
+
+  function level(w){ return w>=30 ? "green" : w>=18 ? "yellow" : "red" }
+  var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า"};
+
+  function advice(p){
+    if(p.pd100>=60) return "ชาร์จเร็วมากครับ ใช้หัว PD 100W ได้เลย";
+    if(p.pd100>=30) return "ชาร์จเร็วพอใช้ครับ ถ้าอยากได้สปีดสูงสุด ("+p.tech+") ต้องใช้หัวแท้";
+    return "ชาร์จได้แต่ช้าครับ ถ้าอยากได้เร็ว ("+p.tech+") ต้องใช้หัวแท้ "+p.brand+" เท่านั้นครับ";
+  }
+
+  function fullName(p){
+    return p.model.toLowerCase().indexOf(p.brand.toLowerCase())===0 ? p.model : p.brand+" "+p.model;
+  }
+
+  function script(p){
+    return [
+      "📱 "+fullName(p)+" ("+p.year+")",
+      "🔋 แบต "+p.battery+" / ชาร์จแท้ "+p.tech,
+      "⚡ หัว PD 36W ของร้าน ได้"+(p.conf==="low"?"ประมาณ ":" ")+p.pd36+"W",
+      "⚡ หัว PD 100W Blisstech ได้"+(p.conf==="low"?"ประมาณ ":" ")+p.pd100+"W",
+      "💡 แนะนำ: "+advice(p),
+      "✅ สรุป: "+LABEL[level(p.pd100)],
+      "สอบถามเพิ่มเติมได้เลยครับ/ค่ะ"
+    ].join("\n");
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}) }
+
+  function yearClass(y){ return y<=2022 ? "y-old" : y<=2024 ? "y-mid" : "y-new" }
+
+  // ---------- ค้นหาแบบใกล้เคียง ----------
+  // คำไทย/คำย่อ → คำมาตรฐาน (เพิ่มได้ที่นี่)
+  var ALIAS = [
+    [/ไอโฟน|ไอโฟร|ไอโพน|\bip(?=\d|\s|$)/g, " iphone "],
+    [/ซัมซุง|ซัมซุน|แซมซุง|ซัม\b|\bss(?=\d|\s|$)/g, " samsung "],
+    [/กาแล็กซี่|กาแลคซี่|กาแล็คซี่|กาแลกซี่/g, " galaxy "],
+    [/ออปโป้|ออปโป|ออปโบ้|อ๊อปโป้/g, " oppo "],
+    [/เสี่ยวหมี่|เสียวหมี่|เสียวมี่|เสี่ยวมี่|ชาโอมี่|เสียวมิ/g, " xiaomi "],
+    [/เรดมี่|เรดหมี่|เรดมี/g, " redmi "], [/โพโค่|โปโก้|โพโค/g, " poco "],
+    [/วีโว่|วีโว|วิโว่/g, " vivo "], [/ไอคิว|ไอคูโอ/g, " iqoo "],
+    [/หัวเว่ย|หัวเหว่ย|หัวเวย/g, " huawei "], [/ออนเนอร์|ออเนอร์|โฮนอร์/g, " honor "],
+    [/วันพลัส|วันพลัช/g, " oneplus "], [/เรียลมี|เรียวมี|เรียลมี่/g, " realme "],
+    [/แมคบุ๊ค|แม็คบุ๊ค|แมคบุค/g, " macbook "], [/ไอแพด|ไอแพ็ด/g, " ipad "],
+    [/โปรแม็กซ์|โปรแม็ก|โปรแมก|โปรแมค|โปรแม๊ก/g, " pro max "],
+    [/โปร/g, " pro "], [/แม็กซ์|แม็ก|แมกซ์|แมก/g, " max "], [/พลัส/g, " plus "],
+    [/อัลตร้า|อัลตรา|อุลตร้า|อันตร้า/g, " ultra "], [/มินิ/g, " mini "],
+    [/แอร์/g, " air "], [/โฟลด์|โฟล์ด/g, " fold "], [/ฟลิป|ฟลิบ/g, " flip "],
+    [/โน้ต|โน๊ต|โน็ต/g, " note "], [/รีโน่|รีโน/g, " reno "], [/ไฟนด์|ฟายด์/g, " find "],
+    [/promax/g, " pro max "], [/\+/g, " plus "],
+    [/\b([sa]\d{2})u\b/g, " $1 ultra "], [/\b(s\d{2})p\b/g, " $1 plus "]
+  ];
+  var ALIAS_AFTER = [[/\bpm\b/g, " pro max "], [/\bpro ?m\b/g, " pro max "]];
+
+  function tokens(s){
+    s = " "+String(s).toLowerCase()+" ";
+    ALIAS.forEach(function(r){ s = s.replace(r[0], r[1]) });
+    s = s.replace(/([a-z])(\d)/g,"$1 $2").replace(/(\d)([a-z])/g,"$1 $2").replace(/[^a-z0-9]+/g," ");
+    ALIAS_AFTER.forEach(function(r){ s = s.replace(r[0], r[1]) });
+    return s.trim().split(" ").filter(Boolean);
+  }
+
+  function lev(a,b){
+    if(Math.abs(a.length-b.length)>2) return 9;
+    var d=[],i,j; for(i=0;i<=b.length;i++) d[i]=i;
+    for(i=1;i<=a.length;i++){ var prev=d[0]; d[0]=i;
+      for(j=1;j<=b.length;j++){ var t=d[j]; d[j]=Math.min(d[j]+1,d[j-1]+1,prev+(a[i-1]===b[j-1]?0:1)); prev=t } }
+    return d[b.length];
+  }
+
+  // คำค้นคำหนึ่งตรงกับคำในชื่อรุ่นแค่ไหน (0 = ไม่ตรง)
+  function tokMatch(q,t){
+    if(q===t) return 1;
+    var num=/^\d+$/.test(q);
+    if(num) return 0;                                  // ตัวเลขต้องตรงเป๊ะ
+    if(q.length>=2 && t.indexOf(q)===0) return .9;    // พิมพ์ไม่จบคำ เช่น "ult"
+    if(q.length>=4 && lev(q,t)<=(q.length>=7?2:1)) return .8; // พิมพ์ผิดนิดหน่อย
+    return 0;
+  }
+
+  phones.forEach(function(p){
+    var bt = tokens(p.brand), mt = tokens(p.model);
+    p._tok = bt.concat(mt.filter(function(t){ return bt.indexOf(t)<0 }));
+    if(p.cat==="Samsung" && p._tok.indexOf("samsung")<0) p._tok.unshift("samsung");
+    p._brand = {}; p._tok.forEach(function(t){ if(bt.indexOf(t)>-1 || t==="samsung" || t==="galaxy") p._brand[t]=1 });
+  });
+  var VOCAB = {}; phones.forEach(function(p){ p._tok.forEach(function(t){ VOCAB[t]=1 }) });
+  var VOCAB_LIST = Object.keys(VOCAB);
+
+  function search(q){
+    // ทิ้งคำที่ไม่เกี่ยวกับรุ่นมือถือเลย เช่น "ครับ" "ชาร์จได้ไหม" ในข้อความที่ก๊อปมาวาง
+    var qt = tokens(q).filter(function(w){
+      return VOCAB_LIST.some(function(t){ return tokMatch(w,t)>0 });
+    });
+    if(!qt.length) return [];
+    var scored = phones.map(function(p){
+      var score=0, used={};
+      qt.forEach(function(w){
+        var best=0, bi=-1;
+        p._tok.forEach(function(t,i){ var m=tokMatch(w,t); if(m>best && !used[i]){best=m;bi=i} });
+        // ตัวเลขรุ่นสำคัญสุด > ชื่อแบรนด์ > คำอื่น (pro, max, ultra)
+        if(bi>-1){ used[bi]=1; score += best*(/^\d+$/.test(w) ? 3 : p._brand[p._tok[bi]] ? 2 : 1.5) }
+      });
+      var extra = p._tok.length - Object.keys(used).length;
+      return {p:p, score:score, extra:extra};
+    }).filter(function(x){ return x.score>0 });
+    if(!scored.length) return [];
+    var top = Math.max.apply(null, scored.map(function(x){return x.score}));
+    return scored.filter(function(x){ return x.score >= top*0.7 })
+      .sort(function(a,b){ return b.score-a.score || a.extra-b.extra || b.p.year-a.p.year })
+      .map(function(x){ return x.p });
+  }
+
+  function render(){
+    var searching = !!state.q.trim();
+    var words = searching ? [1] : [];
+    shown = searching ? search(state.q)
+      : phones.filter(function(p){ return state.filter==="all" || p.cat===state.filter })
+              .sort(function(a,b){ return b.year-a.year || b.pd100-a.pd100 });
+
+    var lastYear = null;
+    $("list").innerHTML = shown.map(function(p,i){
+      var yearHead = (!searching && p.year!==lastYear) ? '<h2 class="yhead">ปี '+p.year+'</h2>' : "";
+      lastYear = p.year;
+      var l100 = level(p.pd100), l36 = level(p.pd36);
+      var cls = p.isNewest ? "newest" : p.isNew ? "new" : "";
+      var tag = (p.isNew ? '<span class="tag t-new">NEW</span>' : "") +
+                (p.conf==="low" ? '<span class="tag t-est" title="ยังไม่มีผลทดสอบกับหัวทั่วไป">ค่าประมาณ</span>' : "");
+      return yearHead+'<article class="phone '+cls+'">'+
+        '<div class="row1"><div style="min-width:0">'+
+          '<div class="tags"><span class="bname">'+esc(p.brand)+'</span><span class="tag '+yearClass(p.year)+'">'+p.year+'</span>'+tag+'</div>'+
+          '<div class="model">'+esc(p.model)+'</div>'+
+          '<div class="tech">'+esc(p.tech)+' · '+esc(p.battery)+'</div>'+
+        '</div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
+        '<div class="watts">'+
+          '<div class="w dark"><small>หัว PD 36W</small><div class="num"><b>'+p.pd36+'<i>W</i></b><span class="status s-'+l36+'">'+LABEL[l36]+'</span></div></div>'+
+          '<div class="w light"><small>หัว PD 100W</small><div class="num"><b>'+p.pd100+'<i>W</i></b><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div></div>'+
+        '</div>'+
+        '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(p.note)+'</div>'+
+        (p.src ? '<a class="src" href="'+esc(p.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
+        '<button class="copy" data-i="'+i+'">คัดลอกสคริปต์ส่งลูกค้า</button>'+
+      '</article>';
+    }).join("");
+
+    $("empty").style.display = shown.length ? "none" : "block";
+    $("count").innerHTML = "เจอ <b style=\"font-size:16px;color:var(--ink)\">"+shown.length+"</b> รุ่น จากทั้งหมด "+phones.length+" รุ่น";
+    $("searchBox").classList.toggle("has", !!state.q);
+    var active = words.length ? "all" : state.filter;
+    [].forEach.call(document.querySelectorAll(".chip"), function(c){ c.classList.toggle("on", c.dataset.k===active) });
+  }
+
+  function toast(msg){
+    var t=$("toast"); t.textContent=msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove("show")},2500);
+  }
+
+  function copyText(text){
+    function fallback(){
+      var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      var ok=false; try{ ok=document.execCommand("copy") }catch(e){}
+      ta.remove();
+      toast(ok ? "คัดลอกแล้ว ✅" : "คัดลอกไม่สำเร็จ กดค้างที่ข้อความเพื่อคัดลอกเอง");
+    }
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){toast("คัดลอกแล้ว ✅")}, fallback);
+    } else fallback();
+  }
+
+  function openModal(p){
+    var text=script(p);
+    $("mTitle").textContent = fullName(p)+" ("+p.year+")";
+    $("mText").value = text;
+    $("modal").classList.add("open");
+    copyText(text);
+  }
+  function closeModal(){ $("modal").classList.remove("open") }
+
+  function stamp(){ return new Date().toISOString().slice(0,10) }
+
+  function download(href, name){
+    var a=document.createElement("a"); a.href=href; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  function csv(){
+    if(!shown.length){ toast("ไม่มีข้อมูลให้ดาวน์โหลด"); return }
+    var q=function(s){ return '"'+String(s).replace(/"/g,'""')+'"' };
+    var head=["ยี่ห้อ","รุ่น","ปี","เทคโนโลยีชาร์จแท้","แบต","PD 36W (W)","PD 100W (W)","ต้องบอกลูกค้า","สถานะ"];
+    var lines=[head.map(q).join(",")].concat(shown.map(function(p){
+      return [p.brand,p.model,p.year,p.tech,p.battery,p.pd36,p.pd100,p.note,LABEL[level(p.pd100)]].map(q).join(",");
+    }));
+    var url=URL.createObjectURL(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}));
+    download(url,"Blisstech_Check_charge_"+stamp()+".csv");
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+    toast("ดาวน์โหลด CSV "+shown.length+" รุ่นแล้ว");
+  }
+
+  function image(){
+    if(!shown.length){ toast("ไม่มีข้อมูลให้บันทึก"); return }
+    var font='"Kanit","Noto Sans Thai",sans-serif';
+    var cols=[{t:"ยี่ห้อ",w:80},{t:"รุ่น",w:190},{t:"ปี",w:48},{t:"ชาร์จแท้",w:220},{t:"PD 36W",w:70},{t:"PD 100W",w:76},{t:"ต้องบอกลูกค้า",w:300}];
+    var pad=20, rowH=32, headH=34, top=64, bottom=40;
+    var W=cols.reduce(function(s,c){return s+c.w},0)+pad*2, H=top+headH+rowH*shown.length+bottom, S=2;
+    var cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
+    var g=cv.getContext("2d"); g.scale(S,S);
+    var fit=function(s,w){ s=String(s); while(s.length>1 && g.measureText(s).width>w-10) s=s.slice(0,-2)+"…"; return s };
+    g.fillStyle="#fff"; g.fillRect(0,0,W,H);
+    g.fillStyle="#18181b"; g.font="bold 17px "+font; g.fillText("Blisstech Check charge – "+shown.length+" รุ่น",pad,30);
+    g.fillStyle="#71717a"; g.font="11px "+font; g.fillText("เขียว ≥30W ได้เต็ม · เหลือง 18–29W ได้กลาง · แดง <18W ได้ช้า · "+stamp(),pad,48);
+    var y=top; g.fillStyle="#18181b"; g.fillRect(pad,y,W-pad*2,headH);
+    g.fillStyle="#fff"; g.font="bold 11px "+font;
+    var x=pad+6; cols.forEach(function(c){ g.fillText(c.t,x,y+21); x+=c.w });
+    y+=headH;
+    var pill=function(w,x){
+      var l=level(w); g.fillStyle={green:"#10b981",yellow:"#fbbf24",red:"#ef4444"}[l];
+      if(g.roundRect){ g.beginPath(); g.roundRect(x,y+7,50,18,9); g.fill() } else g.fillRect(x,y+7,50,18);
+      g.fillStyle=l==="yellow"?"#18181b":"#fff"; g.font="bold 11px "+font; g.fillText(w+"W",x+12,y+20);
+    };
+    shown.forEach(function(p,i){
+      g.fillStyle=i%2?"#fff":"#fafafa"; g.fillRect(pad,y,W-pad*2,rowH);
+      var x=pad+6;
+      g.fillStyle="#18181b"; g.font="bold 11px "+font; g.fillText(fit(p.brand,cols[0].w),x,y+20); x+=cols[0].w;
+      g.font="11px "+font; g.fillText(fit(p.model,cols[1].w),x,y+20); x+=cols[1].w;
+      g.fillStyle="#71717a"; g.fillText(p.year,x,y+20); x+=cols[2].w;
+      g.fillStyle="#3f3f46"; g.font="10px "+font; g.fillText(fit(p.tech,cols[3].w),x,y+20); x+=cols[3].w;
+      pill(p.pd36,x); x+=cols[4].w;
+      pill(p.pd100,x); x+=cols[5].w;
+      g.fillStyle="#3f3f46"; g.font="10px "+font; g.fillText(fit(p.note,cols[6].w),x,y+20);
+      y+=rowH;
+    });
+    g.fillStyle="#71717a"; g.font="10px "+font; g.fillText("Blisstech Check charge",pad,y+24);
+    download(cv.toDataURL("image/png"),"Blisstech_Check_charge_"+stamp()+".png");
+    toast("บันทึกเป็นรูป "+shown.length+" รุ่นแล้ว");
+  }
+
+  // ---- ผูกปุ่ม ----
+  $("chips").innerHTML = ['<button class="chip" data-k="all">ทั้งหมด</button>'].concat(BRANDS.map(function(b){
+    var n = phones.filter(function(p){return p.cat===b}).length;
+    return '<button class="chip" data-k="'+b+'">'+(BRAND_LABEL[b]||b)+' <span class="n">'+n+'</span></button>';
+  })).join("");
+  $("chips").addEventListener("click",function(e){
+    var c=e.target.closest(".chip"); if(!c) return;
+    state.filter=c.dataset.k; state.q=""; $("q").value=""; render();
+  });
+  $("q").addEventListener("input",function(e){ state.q=e.target.value; render() });
+  $("clearQ").addEventListener("click",function(){ state.q=""; $("q").value=""; $("q").focus(); render() });
+  $("resetAll").addEventListener("click",function(){ state.q=""; state.filter="all"; $("q").value=""; render() });
+  $("list").addEventListener("click",function(e){
+    var b=e.target.closest(".copy"); if(!b) return;
+    openModal(shown[+b.dataset.i]);
+  });
+  $("mCopy").addEventListener("click",function(){ copyText($("mText").value) });
+  $("modal").addEventListener("click",function(e){ if(e.target.hasAttribute("data-close")) closeModal() });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeModal() });
+  $("btnCsv").addEventListener("click",csv);
+  $("btnImg").addEventListener("click",function(){ (document.fonts?document.fonts.ready:Promise.resolve()).then(image) });
+
+  $("headCount").textContent = phones.length+" รุ่น · ชาร์จกับหัว PD 36W / 100W ได้กี่วัตต์";
+  var qb = new URLSearchParams(location.search).get("brand");
+  if(qb && BRANDS.indexOf(qb)>-1) state.filter = qb;
+  $("foot").textContent = "Blisstech Check charge · "+phones.length+" รุ่น · ใช้งานออฟไลน์ได้";
+  render();
+})();
+</script>
+</body>
+</html>
