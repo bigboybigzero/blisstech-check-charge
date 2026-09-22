@@ -69,6 +69,11 @@
   .phone{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column}
   .phone.new{border-color:var(--blue-line)}
   .row1{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .ident{display:flex;gap:14px;align-items:center;min-width:0}
+  .thumb{width:84px;height:112px;flex-shrink:0;border-radius:12px;background:#fff;border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
+  .thumb img{width:100%;height:100%;object-fit:contain}
+  .thumb.noimg{background:var(--sunk);border-style:dashed}
+  .thumb.noimg span{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:4px}
   .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .bname{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
   .tag{font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;border:1px solid transparent}
@@ -259,6 +264,12 @@
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}) }
 
+  // รูปรุ่นจากเว็บแบรนด์ (ไฟล์ใน img/) — ไม่มีรูปแสดงกรอบว่างพร้อมชื่อแบรนด์
+  function thumb(p){
+    return p.img ? '<div class="thumb"><img src="'+esc(p.img)+'" alt="'+esc(p.model)+'" loading="lazy"></div>'
+                 : '<div class="thumb noimg"><span>'+esc(p.brand)+'</span></div>';
+  }
+
   function yearClass(y){ return y<=2022 ? "y-old" : y<=2024 ? "y-mid" : "y-new" }
 
   // ---------- ค้นหาแบบใกล้เคียง ----------
@@ -359,11 +370,11 @@
       var tag = (p.isNew ? '<span class="tag t-new">NEW</span>' : "") +
                 '<span class="tag b-'+p.basis+'">'+BASIS[p.basis]+'</span>';
       return yearHead+'<article class="phone '+cls+'">'+
-        '<div class="row1"><div style="min-width:0">'+
+        '<div class="row1"><div class="ident">'+thumb(p)+'<div style="min-width:0">'+
           '<div class="tags"><span class="bname">'+esc(p.brand)+'</span><span class="tag '+yearClass(p.year)+'">'+p.year+'</span>'+tag+'</div>'+
           '<div class="model">'+esc(p.model)+'</div>'+
           '<div class="tech">'+esc(p.tech)+' · '+esc(p.battery)+'</div>'+
-        '</div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
+        '</div></div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
         '<div class="watts">'+
           '<div class="w dark"><small>หัว PD 36W</small><div class="num"><b>'+watt(p.pd36)+(p.pd36==null?'':'<i>W</i>')+'</b><span class="status s-'+l36+'">'+LABEL[l36]+'</span></div></div>'+
           '<div class="w light"><small>หัว PD 100W</small><div class="num"><b>'+watt(p.pd100)+(p.pd100==null?'':'<i>W</i>')+'</b><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div></div>'+
@@ -490,6 +501,8 @@
   $("headCount").textContent = phones.length+" รุ่น · ชาร์จกับหัว PD 36W / 100W ได้กี่วัตต์";
   var qb = new URLSearchParams(location.search).get("brand");
   if(qb && BRANDS.indexOf(qb)>-1) state.filter = qb;
+  var qq = new URLSearchParams(location.search).get("q");
+  if(qq){ state.q = qq; $("q").value = qq; }
   $("foot").textContent = "Blisstech Check charge · "+phones.length+" รุ่น · ใช้งานออฟไลน์ได้";
   render();
 })();
