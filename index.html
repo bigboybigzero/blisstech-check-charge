@@ -77,6 +77,11 @@
   .y-new{background:var(--blue-soft);color:var(--blue);border-color:var(--blue-line)}
   .t-new,.t-newest{background:var(--blue);color:#fff}
   .t-est{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
+  .b-measured{background:var(--green-bg);color:var(--green)}
+  .b-official{background:var(--blue-soft);color:var(--blue)}
+  .b-derived{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+  .b-none{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
+  .s-unk{background:var(--sunk);color:var(--muted);border:1px dashed var(--line-2)}
   .model{font-size:21px;font-weight:800;line-height:1.25;margin-top:6px;color:var(--ink)}
   .tech{font-size:13px;color:var(--muted);margin-top:2px}
   .status{flex-shrink:0;font-size:14px;font-weight:700;padding:5px 12px;border-radius:8px}
@@ -189,8 +194,8 @@
     <div><span class="status s-green">ได้เต็ม</span><span><b>≥30W</b> ชาร์จเร็ว ใกล้เคียงหัวแท้ ใช้หัว PD/PPS ของร้านได้เลย</span></div>
     <div><span class="status s-yellow">ได้กลาง</span><span><b>18–29W</b> เร็วระดับกลาง ลูกค้ารอได้ แนะนำหัว PD 100W ที่รองรับ PPS</span></div>
     <div><span class="status s-red">ได้ช้า</span><span><b>&lt;18W</b> ชาร์จได้ ไม่พัง แต่ช้า ถ้าอยากได้เร็วต้องใช้หัวแท้ของยี่ห้อนั้น</span></div>
-    <div><span class="tag t-est" style="min-width:64px;text-align:center;padding:4px 8px">ค่าประมาณ</span><span>ยังไม่มีผลทดสอบกับหัวทั่วไป ตัวเลขตั้งไว้ค่อนข้างต่ำเพื่อไม่ให้บอกลูกค้าเกินจริง</span></div>
-    <div style="color:var(--muted)">ตัวเลขทั้งหมดคิดจากหัว PD ที่รองรับ PPS · Samsung 45W, Xiaomi/OPPO รุ่นใหม่ ต้องใช้สาย 5A ถึงจะได้วัตต์สูงสุด</div>
+    <div><span class="status s-unk">ยังไม่ยืนยัน</span><span>ยังไม่มีผลทดสอบหรือสเปคทางการบอกวัตต์กับหัวทั่วไป จึงไม่ใส่ตัวเลข ควรวัดด้วยมิเตอร์ก่อนแจ้งลูกค้า</span></div>
+    <div style="color:var(--muted)">ที่มาตัวเลข: <b>วัดจริง</b> = มีผลวัดจากแล็บ/รีวิว · <b>สเปคทางการ</b> = ผู้ผลิตระบุ · <b>คำนวณจากสเปค</b> = คิดจากแรงดัน/กระแสที่ผู้ผลิตระบุ · หัว 100W ของร้านเป็น PD3.0 + PPS ไม่มี AVS · Samsung 45W และ Xiaomi/OPPO รุ่นใหม่ต้องใช้สาย 5A</div>
   </section>
 
   <footer id="foot"></footer>
@@ -224,10 +229,13 @@
 
   var $ = function(id){return document.getElementById(id)};
 
-  function level(w){ return w>=30 ? "green" : w>=18 ? "yellow" : "red" }
-  var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า"};
+  function level(w){ return w==null ? "unk" : w>=30 ? "green" : w>=18 ? "yellow" : "red" }
+  var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า", unk:"ยังไม่ยืนยัน"};
+  var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", none:"ยังไม่ยืนยัน"};
+  function watt(w){ return w==null ? "—" : w }
 
   function advice(p){
+    if(p.pd100==null) return "รุ่นนี้ขอเช็คกับเครื่องจริงที่ร้านก่อนนะครับ จะได้แจ้งวัตต์ที่ถูกต้อง";
     if(p.pd100>=60) return "ชาร์จเร็วมากครับ ใช้หัว PD 100W ได้เลย";
     if(p.pd100>=30) return "ชาร์จเร็วพอใช้ครับ ถ้าอยากได้สปีดสูงสุด ("+p.tech+") ต้องใช้หัวแท้";
     return "ชาร์จได้แต่ช้าครับ ถ้าอยากได้เร็ว ("+p.tech+") ต้องใช้หัวแท้ "+p.brand+" เท่านั้นครับ";
@@ -241,10 +249,10 @@
     return [
       "📱 "+fullName(p)+" ("+p.year+")",
       "🔋 แบต "+p.battery+" / ชาร์จแท้ "+p.tech,
-      "⚡ หัว PD 36W ของร้าน ได้"+(p.conf==="low"?"ประมาณ ":" ")+p.pd36+"W",
-      "⚡ หัว PD 100W Blisstech ได้"+(p.conf==="low"?"ประมาณ ":" ")+p.pd100+"W",
+      "⚡ หัว PD 36W ของร้าน: "+(p.pd36==null?"รอเช็ค":"ได้ราว "+p.pd36+"W"),
+      "⚡ หัว PD 100W Blisstech: "+(p.pd100==null?"รอเช็ค":"ได้ราว "+p.pd100+"W"),
       "💡 แนะนำ: "+advice(p),
-      "✅ สรุป: "+LABEL[level(p.pd100)],
+      "✅ สรุป: "+(p.pd100==null?"รอเช็คกับเครื่องจริง":LABEL[level(p.pd100)]),
       "สอบถามเพิ่มเติมได้เลยครับ/ค่ะ"
     ].join("\n");
   }
@@ -340,7 +348,7 @@
     var words = searching ? [1] : [];
     shown = searching ? search(state.q)
       : phones.filter(function(p){ return state.filter==="all" || p.cat===state.filter })
-              .sort(function(a,b){ return b.year-a.year || b.pd100-a.pd100 });
+              .sort(function(a,b){ return b.year-a.year || (b.pd100||0)-(a.pd100||0) });
 
     var lastYear = null;
     $("list").innerHTML = shown.map(function(p,i){
@@ -349,7 +357,7 @@
       var l100 = level(p.pd100), l36 = level(p.pd36);
       var cls = p.isNewest ? "newest" : p.isNew ? "new" : "";
       var tag = (p.isNew ? '<span class="tag t-new">NEW</span>' : "") +
-                (p.conf==="low" ? '<span class="tag t-est" title="ยังไม่มีผลทดสอบกับหัวทั่วไป">ค่าประมาณ</span>' : "");
+                '<span class="tag b-'+p.basis+'">'+BASIS[p.basis]+'</span>';
       return yearHead+'<article class="phone '+cls+'">'+
         '<div class="row1"><div style="min-width:0">'+
           '<div class="tags"><span class="bname">'+esc(p.brand)+'</span><span class="tag '+yearClass(p.year)+'">'+p.year+'</span>'+tag+'</div>'+
@@ -357,8 +365,8 @@
           '<div class="tech">'+esc(p.tech)+' · '+esc(p.battery)+'</div>'+
         '</div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
         '<div class="watts">'+
-          '<div class="w dark"><small>หัว PD 36W</small><div class="num"><b>'+p.pd36+'<i>W</i></b><span class="status s-'+l36+'">'+LABEL[l36]+'</span></div></div>'+
-          '<div class="w light"><small>หัว PD 100W</small><div class="num"><b>'+p.pd100+'<i>W</i></b><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div></div>'+
+          '<div class="w dark"><small>หัว PD 36W</small><div class="num"><b>'+watt(p.pd36)+(p.pd36==null?'':'<i>W</i>')+'</b><span class="status s-'+l36+'">'+LABEL[l36]+'</span></div></div>'+
+          '<div class="w light"><small>หัว PD 100W</small><div class="num"><b>'+watt(p.pd100)+(p.pd100==null?'':'<i>W</i>')+'</b><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div></div>'+
         '</div>'+
         '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(p.note)+'</div>'+
         (p.src ? '<a class="src" href="'+esc(p.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
@@ -409,9 +417,9 @@
   function csv(){
     if(!shown.length){ toast("ไม่มีข้อมูลให้ดาวน์โหลด"); return }
     var q=function(s){ return '"'+String(s).replace(/"/g,'""')+'"' };
-    var head=["ยี่ห้อ","รุ่น","ปี","เทคโนโลยีชาร์จแท้","แบต","PD 36W (W)","PD 100W (W)","ต้องบอกลูกค้า","สถานะ"];
+    var head=["ยี่ห้อ","รุ่น","ปี","เทคโนโลยีชาร์จแท้","แบต","PD 36W (W)","PD 100W (W)","ต้องบอกลูกค้า","สถานะ","ที่มาตัวเลข"];
     var lines=[head.map(q).join(",")].concat(shown.map(function(p){
-      return [p.brand,p.model,p.year,p.tech,p.battery,p.pd36,p.pd100,p.note,LABEL[level(p.pd100)]].map(q).join(",");
+      return [p.brand,p.model,p.year,p.tech,p.battery,watt(p.pd36),watt(p.pd100),p.note,LABEL[level(p.pd100)],BASIS[p.basis]].map(q).join(",");
     }));
     var url=URL.createObjectURL(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}));
     download(url,"Blisstech_Check_charge_"+stamp()+".csv");
@@ -436,9 +444,9 @@
     var x=pad+6; cols.forEach(function(c){ g.fillText(c.t,x,y+21); x+=c.w });
     y+=headH;
     var pill=function(w,x){
-      var l=level(w); g.fillStyle={green:"#10b981",yellow:"#fbbf24",red:"#ef4444"}[l];
+      var l=level(w); g.fillStyle={green:"#1f9d63",yellow:"#e0a91b",red:"#d24b43",unk:"#c6c9d3"}[l];
       if(g.roundRect){ g.beginPath(); g.roundRect(x,y+7,50,18,9); g.fill() } else g.fillRect(x,y+7,50,18);
-      g.fillStyle=l==="yellow"?"#18181b":"#fff"; g.font="bold 11px "+font; g.fillText(w+"W",x+12,y+20);
+      g.fillStyle=l==="yellow"?"#18181b":"#fff"; g.font="bold 11px "+font; g.fillText(w==null?"—":w+"W",x+12,y+20);
     };
     shown.forEach(function(p,i){
       g.fillStyle=i%2?"#fff":"#fafafa"; g.fillRect(pad,y,W-pad*2,rowH);
