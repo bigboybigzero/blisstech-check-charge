@@ -239,27 +239,69 @@
   var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", none:"ยังไม่ยืนยัน"};
   function watt(w){ return w==null ? "—" : w }
 
+  // ประโยคแนะนำสำหรับลูกค้า (ไม่ใช้ศัพท์เทคนิค)
   function advice(p){
-    if(p.pd100==null) return "รุ่นนี้ขอเช็คกับเครื่องจริงที่ร้านก่อนนะครับ จะได้แจ้งวัตต์ที่ถูกต้อง";
-    if(p.pd100>=60) return "ชาร์จเร็วมากครับ ใช้หัว PD 100W ได้เลย";
-    if(p.pd100>=30) return "ชาร์จเร็วพอใช้ครับ ถ้าอยากได้สปีดสูงสุด ("+p.tech+") ต้องใช้หัวแท้";
-    return "ชาร์จได้แต่ช้าครับ ถ้าอยากได้เร็ว ("+p.tech+") ต้องใช้หัวแท้ "+p.brand+" เท่านั้นครับ";
+    if(p.pd100==null) return "รุ่นนี้ขอเช็คกับเครื่องจริงที่หน้าร้านก่อนนะครับ ใช้เวลาไม่ถึงนาที";
+    if(p.pd100>=45) return "ใช้หัวชาร์จในรถ Blisstech ได้เลยครับ ชาร์จเร็วใกล้เคียงหัวแท้";
+    if(p.pd100>=30) return "ใช้หัวชาร์จในรถ Blisstech ได้เลยครับ ชาร์จเร็วใช้งานได้สบาย";
+    if(p.pd100>=18) return "ชาร์จได้เร็วระดับกลางครับ ถ้าอยากเร็วที่สุดต้องใช้หัวแท้ของรุ่นนี้";
+    return "ใช้ได้ปลอดภัยไม่พังครับ แต่จะชาร์จช้า เพราะเครื่องรุ่นนี้รับไฟจากหัวมาตรฐานได้จำกัด ถ้าอยากเร็วต้องใช้หัวแท้";
   }
+
+  // ตัดคำอธิบายยาวในช่อง tech ให้เหลือชื่อเทคโนโลยีชาร์จ
+  function shortTech(t){
+    t = String(t).split(/[,(]/)[0].trim();
+    return t.length>48 ? t.slice(0,48).trim()+"…" : t;
+  }
+
+  // ใช้บรรทัด "ชาร์จแท้" เฉพาะรุ่นที่สเปคระบุวัตต์ชัด (บางรุ่นเก็บเป็นคำอธิบายยาว ไม่เหมาะส่งลูกค้า)
+  function techLine(p){
+    var t = shortTech(p.tech);
+    return /^~?\d/.test(t) ? t : "";
+  }
+
+  // Samsung เรียกระดับการชาร์จเป็นชื่อเฉพาะ — ดูจากกำลังชาร์จของตัวเครื่อง
+  function samsungTier(p){
+    if(p.cat!=="Samsung") return "";
+    var m = String(p.tech).match(/(\d+(?:\.\d+)?)\s*W/);
+    if(!m) return "";
+    var w = parseFloat(m[1]);
+    if(w>=60) return "รองรับชาร์จด่วนพิเศษ 3.0 ("+w+"W)";
+    if(w>=45) return "รองรับชาร์จด่วนพิเศษ 2.0 ("+w+"W)";
+    if(w>=25) return "รองรับชาร์จด่วนพิเศษ ("+w+"W)";
+    if(w>=15) return "รองรับชาร์จด่วน ("+w+"W)";
+    return "";
+  }
+
+  // บอกวัตต์ที่ใช้ได้จริงกับหัวของร้าน และอธิบายเรื่องหัวแท้เมื่อเครื่องรองรับได้สูงกว่านั้นมาก
+  function chargeLines(p){
+    if(p.pd100==null) return [];
+    var m = String(p.tech).match(/(\d+(?:\.\d+)?)\s*W/);
+    var native = m ? parseFloat(m[1]) : null;
+    var ours = Math.floor(p.pd100);
+    var out = [];
+    if(native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
+    out.push("⚡ ใช้กับหัวชาร์จในรถ Blisstech ได้ประมาณ "+ours+"W");
+    return out;
+  }
+
+  function needs5A(p){ return /5A/.test((p.note||"")+(p.tech||"")); }
 
   function fullName(p){
     return p.model.toLowerCase().indexOf(p.brand.toLowerCase())===0 ? p.model : p.brand+" "+p.model;
   }
 
   function script(p){
-    return [
-      "📱 "+fullName(p)+" ("+p.year+")",
-      "🔋 แบต "+p.battery+" / ชาร์จแท้ "+p.tech,
-      "⚡ หัว PD 36W ของร้าน: "+(p.pd36==null?"รอเช็ค":"ได้ราว "+p.pd36+"W"),
-      "⚡ หัว PD 100W Blisstech: "+(p.pd100==null?"รอเช็ค":"ได้ราว "+p.pd100+"W"),
-      "💡 แนะนำ: "+advice(p),
-      "✅ สรุป: "+(p.pd100==null?"รอเช็คกับเครื่องจริง":LABEL[level(p.pd100)]),
-      "สอบถามเพิ่มเติมได้เลยครับ/ค่ะ"
-    ].join("\n");
+    // ข้อความส่งลูกค้า: ไม่บอกตัวเลขวัตต์ที่ได้จริง (ลูกค้าสับสนว่าทำไมไม่เต็ม) บอกแค่คำแนะนำ
+    var batt = String(p.battery).split("(")[0].trim();
+    if(!/^~?\d/.test(batt)) batt = "";   // บางรุ่นยังไม่ยืนยันความจุแบต — ไม่ต้องขึ้นบรรทัดนี้
+    var L=["📱 "+fullName(p)+" ("+p.year+")"];
+    if(batt || techLine(p)) L.push("🔋 "+(batt ? "แบต "+batt : "")+(batt && techLine(p) ? " · " : "")+(techLine(p) ? "ชาร์จแท้ "+techLine(p) : ""));
+    if(samsungTier(p)) L.push("🔌 "+samsungTier(p));
+    chargeLines(p).forEach(function(x){ L.push(x) });
+    L.push("", "💡 "+advice(p));
+    L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
+    return L.join("\n");
   }
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}) }
