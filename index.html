@@ -94,14 +94,16 @@
   .s-yellow{background:var(--yellow-bg);color:var(--yellow)}
   .s-red{background:var(--red-bg);color:var(--red)}
 
-  .watts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-  .w{border-radius:12px;padding:12px 14px;border:1px solid var(--line)}
-  .w.dark{background:var(--sunk)}
-  .w.light{background:var(--blue-soft);border-color:var(--blue-line)}
-  .w small{font-size:13px;font-weight:600;color:var(--ink-2)}
+  .watts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .w{border-radius:12px;padding:10px 11px;border:1px solid var(--line)}
+  .w{background:var(--sunk)}
+  .w.best{background:var(--blue-soft);border-color:var(--blue-line)}
+  .w.best small{color:var(--blue)}
+  .w.best b{color:var(--blue)}
+  .w small{font-size:12px;font-weight:600;color:var(--ink-2)}
   .w.light small{color:var(--blue)}
-  .w .num{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;margin-top:2px}
-  .w b{font-size:42px;font-weight:800;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .w .num{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin-top:2px}
+  .w b{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
   .w.light b{color:var(--blue)}
   .w b i{font-style:normal;font-size:20px;font-weight:700;margin-left:1px;opacity:.7}
   .w .status{font-size:12.5px;padding:3px 9px;margin-bottom:6px}
@@ -154,7 +156,7 @@
     <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M13.5 2 4.5 13.5h6L9.5 22l10-12.5h-6.2L13.5 2z"/></svg></div>
     <div class="brand">
       <b>Blisstech Check charge</b>
-      <small id="headCount">เช็ครุ่นมือถือ ชาร์จกับหัว PD ได้กี่วัตต์</small>
+      <small id="headCount">เช็ครุ่นมือถือ ใช้กับหัวชาร์จในรถ Blisstech ได้กี่วัตต์</small>
     </div>
   </div>
 </header>
@@ -200,7 +202,7 @@
     <div><span class="status s-yellow">ได้กลาง</span><span><b>18–29W</b> เร็วระดับกลาง ลูกค้ารอได้ แนะนำหัว PD 100W ที่รองรับ PPS</span></div>
     <div><span class="status s-red">ได้ช้า</span><span><b>&lt;18W</b> ชาร์จได้ ไม่พัง แต่ช้า ถ้าอยากได้เร็วต้องใช้หัวแท้ของยี่ห้อนั้น</span></div>
     <div><span class="status s-unk">ยังไม่ยืนยัน</span><span>ยังไม่มีผลทดสอบหรือสเปคทางการบอกวัตต์กับหัวทั่วไป จึงไม่ใส่ตัวเลข ควรวัดด้วยมิเตอร์ก่อนแจ้งลูกค้า</span></div>
-    <div style="color:var(--muted)">ที่มาตัวเลข: <b>วัดจริง</b> = มีผลวัดจากแล็บ/รีวิว · <b>สเปคทางการ</b> = ผู้ผลิตระบุ · <b>คำนวณจากสเปค</b> = คิดจากแรงดัน/กระแสที่ผู้ผลิตระบุ · หัว 100W ของร้านเป็น PD3.0 + PPS ไม่มี AVS · Samsung 45W และ Xiaomi/OPPO รุ่นใหม่ต้องใช้สาย 5A</div>
+    <div style="color:var(--muted)">ที่มาตัวเลข: <b>วัดจริง</b> = มีผลวัดจากแล็บ/รีวิว · <b>สเปคทางการ</b> = ผู้ผลิตระบุ · <b>คำนวณจากสเปค</b> = คิดจากแรงดัน/กระแสที่ผู้ผลิตระบุ · หัวชาร์จในรถ Blisstech: Mini 36W · Ambient Light 55W · Pro 100W (PD3.0 + PPS ไม่มี AVS) · รุ่น 55W คิดจากค่าหัว 100W แต่จำกัดที่ 55W · Samsung 45W และ Xiaomi/OPPO รุ่นใหม่ต้องใช้สาย 5A</div>
   </section>
 
   <footer id="foot"></footer>
@@ -234,13 +236,45 @@
 
   var $ = function(id){return document.getElementById(id)};
 
+  // สินค้าหัวชาร์จในรถของร้าน
+  var HEADS = [
+    {key:"mini",  name:"Mini 36W",          max:36},
+    {key:"amb",   name:"Ambient Light 55W", max:55},
+    {key:"pro",   name:"Pro 100W",          max:100}
+  ];
+  // วัตต์ที่ได้กับหัวแต่ละรุ่น: 36W ใช้ค่าที่วัด/สืบมา ส่วน 55W คือค่าของหัวใหญ่แต่ไม่เกิน 55W
+  function wattOn(p, key){
+    if(key==="mini") return p.pd36;
+    if(key==="pro")  return p.pd100;
+    if(p.pd100==null) return null;
+    return Math.min(p.pd100, 55);
+  }
+  // หัวที่เล็กที่สุดที่ให้ความเร็วสูงสุดเท่าที่เครื่องนี้รับได้
+  function bestHead(p){
+    if(p.pd100==null) return null;
+    var top = p.pd100;
+    for(var i=0;i<HEADS.length;i++){
+      var w = wattOn(p,HEADS[i].key);
+      if(w!=null && w >= top - 0.5) return HEADS[i];
+    }
+    return HEADS[2];
+  }
+
   function level(w){ return w==null ? "unk" : w>=30 ? "green" : w>=18 ? "yellow" : "red" }
   var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า", unk:"ยังไม่ยืนยัน"};
   var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", none:"ยังไม่ยืนยัน"};
   function watt(w){ return w==null ? "—" : w }
 
   // ประโยคแนะนำสำหรับลูกค้า (ไม่ใช้ศัพท์เทคนิค)
+  function nativeW(p){
+    var m = String(p.tech).match(/(\d+(?:\.\d+)?)\s*W/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
   function advice(p){
+    var nat = nativeW(p);
+    if(p.pd100!=null && nat && p.pd100 >= nat-2)
+      return "ใช้หัวชาร์จในรถ Blisstech ได้เต็มสปีดของเครื่องเลยครับ";
     if(p.pd100==null) return "รุ่นนี้ขอเช็คกับเครื่องจริงที่หน้าร้านก่อนนะครับ ใช้เวลาไม่ถึงนาที";
     if(p.pd100>=45) return "ใช้หัวชาร์จในรถ Blisstech ได้เลยครับ ชาร์จเร็วใกล้เคียงหัวแท้";
     if(p.pd100>=30) return "ใช้หัวชาร์จในรถ Blisstech ได้เลยครับ ชาร์จเร็วใช้งานได้สบาย";
@@ -276,12 +310,11 @@
   // บอกวัตต์ที่ใช้ได้จริงกับหัวของร้าน และอธิบายเรื่องหัวแท้เมื่อเครื่องรองรับได้สูงกว่านั้นมาก
   function chargeLines(p){
     if(p.pd100==null) return [];
-    var m = String(p.tech).match(/(\d+(?:\.\d+)?)\s*W/);
-    var native = m ? parseFloat(m[1]) : null;
-    var ours = Math.floor(p.pd100);
+    var native = nativeW(p);
+    var h = bestHead(p), ours = Math.floor(wattOn(p,h.key));
     var out = [];
     if(native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
-    out.push("⚡ ใช้กับหัวชาร์จในรถ Blisstech ได้ประมาณ "+ours+"W");
+    out.push("⚡ หัวชาร์จในรถ Blisstech ที่แนะนำ: รุ่น "+h.name+" (ได้ประมาณ "+ours+"W)");
     return out;
   }
 
@@ -418,8 +451,13 @@
           '<div class="tech">'+esc(p.tech)+' · '+esc(p.battery)+'</div>'+
         '</div></div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
         '<div class="watts">'+
-          '<div class="w dark"><small>หัว PD 36W</small><div class="num"><b>'+watt(p.pd36)+(p.pd36==null?'':'<i>W</i>')+'</b><span class="status s-'+l36+'">'+LABEL[l36]+'</span></div></div>'+
-          '<div class="w light"><small>หัว PD 100W</small><div class="num"><b>'+watt(p.pd100)+(p.pd100==null?'':'<i>W</i>')+'</b><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div></div>'+
+          HEADS.map(function(h){
+            var w = wattOn(p,h.key), lv = level(w), best = bestHead(p);
+            return '<div class="w'+(best&&best.key===h.key?' best':'')+'">'+
+              '<small>'+h.name+'</small>'+
+              '<div class="num"><b>'+watt(w)+(w==null?'':'<i>W</i>')+'</b>'+
+              '<span class="status s-'+lv+'">'+LABEL[lv]+'</span></div></div>';
+          }).join("")+
         '</div>'+
         '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(p.note)+'</div>'+
         (p.src ? '<a class="src" href="'+esc(p.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
@@ -540,7 +578,7 @@
   $("btnCsv").addEventListener("click",csv);
   $("btnImg").addEventListener("click",function(){ (document.fonts?document.fonts.ready:Promise.resolve()).then(image) });
 
-  $("headCount").textContent = phones.length+" รุ่น · ชาร์จกับหัว PD 36W / 100W ได้กี่วัตต์";
+  $("headCount").textContent = phones.length+" รุ่น · ใช้กับหัวชาร์จในรถ Blisstech ได้กี่วัตต์";
   var qb = new URLSearchParams(location.search).get("brand");
   if(qb && BRANDS.indexOf(qb)>-1) state.filter = qb;
   var qq = new URLSearchParams(location.search).get("q");
