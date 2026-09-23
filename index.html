@@ -311,10 +311,19 @@
   function chargeLines(p){
     if(p.pd100==null) return [];
     var native = nativeW(p);
-    var h = bestHead(p), ours = Math.floor(wattOn(p,h.key));
+    var best = bestHead(p);
+    var wMini = wattOn(p,"mini");
     var out = [];
     if(native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
-    out.push("⚡ หัวชาร์จในรถ Blisstech ที่แนะนำ: รุ่น "+h.name+" (ได้ประมาณ "+ours+"W)");
+    out.push("⚡ หัวชาร์จในรถ Blisstech");
+    // เริ่มที่รุ่นเล็กเสมอ ให้ลูกค้าเห็นว่าพอไหม แล้วค่อยเสนอรุ่นที่เหมาะที่สุด
+    if(best.key==="mini"){
+      out.push("• รุ่น Mini 36W → ได้ประมาณ "+Math.floor(wMini)+"W"+
+        (p.pd100>=18 ? " (พอสำหรับเครื่องนี้แล้วครับ)" : " (ซื้อรุ่นใหญ่กว่าก็ได้เท่านี้ เพราะเครื่องรับได้เท่านี้ครับ)"));
+    } else {
+      out.push("• รุ่น Mini 36W → ได้ประมาณ "+(wMini==null ? "ขอเช็คหน้าร้าน" : Math.floor(wMini)+"W"));
+      out.push("• แนะนำรุ่น "+best.name+" → ได้ประมาณ "+Math.floor(wattOn(p,best.key))+"W (เร็วที่สุดสำหรับเครื่องนี้)");
+    }
     return out;
   }
 
