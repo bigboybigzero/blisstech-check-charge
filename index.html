@@ -60,6 +60,9 @@
   .yhead::after{content:"";flex:1;height:1px;background:var(--line)}
   .yhead:first-child{margin-top:0}
 
+  .headpick{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .headpick-label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+  .headpick .chips{margin-top:0}
   .meta{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;margin-top:14px;font-size:14px;color:var(--ink-2)}
   .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--ink-2)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -116,6 +119,9 @@
   .copy:hover{background:var(--blue-dark)}
   .copy:active{transform:scale(.98)}
   .phone .copy{margin-top:auto}
+  .copy-more{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .copy.sm{margin-top:0;height:40px;font-size:13.5px;background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .copy.sm:hover{background:var(--blue-soft)}
   .phone .note{margin-bottom:10px}
 
   @media (min-width:900px){ .list{grid-template-columns:repeat(2,1fr)} }
@@ -179,6 +185,10 @@
     </div>
 
     <div class="chips" id="chips"></div>
+    <div class="headpick">
+      <span class="headpick-label">เหมาะกับหัวชาร์จในรถ</span>
+      <div class="chips" id="headChips"></div>
+    </div>
 
     <div class="meta">
       <div id="count"></div>
@@ -232,7 +242,7 @@
   var BRAND_LABEL = {Xiaomi:"Xiaomi · Redmi · POCO", Vivo:"Vivo · iQOO", Laptop:"แล็ปท็อป / แท็บเล็ต"};
 
   var phones = (window.PHONES || []).slice();
-  var state = {q:"", filter:"all"};
+  var state = {q:"", filter:"all", head:"all"};
   var shown = [];
 
   var $ = function(id){return document.getElementById(id)};
@@ -344,19 +354,61 @@
     return p.model.toLowerCase().indexOf(p.brand.toLowerCase())===0 ? p.model : p.brand+" "+p.model;
   }
 
-  function script(p){
-    // ข้อความส่งลูกค้า: ไม่บอกตัวเลขวัตต์ที่ได้จริง (ลูกค้าสับสนว่าทำไมไม่เต็ม) บอกแค่คำแนะนำ
+  function headLine(p){
     var batt = String(p.battery).split("(")[0].trim();
-    if(!/^~?\d/.test(batt)) batt = "";   // บางรุ่นยังไม่ยืนยันความจุแบต — ไม่ต้องขึ้นบรรทัดนี้
+    if(!/^~?\d/.test(batt)) batt = "";   // บางรุ่นยังไม่ยืนยันความจุแบต
     var L=["📱 "+fullName(p)+" ("+p.year+")"];
     if(batt || techLine(p)) L.push("🔋 "+(batt ? "แบต "+batt : "")+(batt && techLine(p) ? " · " : "")+(techLine(p) ? "ชาร์จแท้ "+techLine(p) : ""));
+    return L;
+  }
+
+  // 1) สคริปต์หัวชาร์จในรถ Blisstech (สินค้าของร้าน)
+  function scriptCar(p){
+    var L=headLine(p);
     if(samsungTier(p)) L.push("🔌 "+samsungTier(p));
     chargeLines(p).forEach(function(x){ L.push(x) });
-    L.push("🔗 สายชาร์จที่ควรใช้: "+cableTip(p));
     L.push("", "💡 "+advice(p));
     L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
     return L.join("\n");
   }
+
+  // 2) สคริปต์สายชาร์จ (ร้านไม่ได้ขาย ให้คำแนะนำอย่างเดียว)
+  function scriptCable(p){
+    var L=headLine(p);
+    L.push("", "🔗 สายชาร์จที่ควรใช้", "• "+cableTip(p));
+    if(needs5A(p) || (p.pd100!=null && p.pd100>60))
+      L.push("• สายธรรมดาเสียบได้ แต่จะชาร์จช้ากว่าครับ ไม่ใช่เพราะหัวชาร์จ");
+    L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
+    return L.join("\n");
+  }
+
+  // 3) สคริปต์หัวชาร์จปลั๊กบ้าน (แนะนำขนาดที่พอดีกับเครื่อง)
+  var WALL=[20,30,45,65,100];
+  function wallSize(p){
+    if(p.pd100==null) return null;
+    for(var i=0;i<WALL.length;i++) if(WALL[i] >= p.pd100) return WALL[i];
+    return 100;
+  }
+  function scriptWall(p){
+    var L=headLine(p), w=wallSize(p);
+    L.push("", "🏠 หัวชาร์จปลั๊กบ้านที่แนะนำ");
+    if(w==null){
+      L.push("• รุ่นนี้ขอเช็คกับเครื่องจริงที่หน้าร้านก่อนนะครับ จะได้แนะนำขนาดที่พอดี");
+    } else {
+      L.push("• หัว PD/PPS ขนาด "+w+"W ก็พอครับ ซื้อใหญ่กว่านี้เครื่องก็ดึงไฟได้เท่าเดิม");
+      if(needs5A(p)) L.push("• ต้องใช้คู่กับสายที่รองรับ 5A ถึงจะได้เต็มครับ");
+      var nat = nativeW(p);
+      if(nat && nat > p.pd100 + 5) L.push("• ถ้าอยากได้ "+nat+"W เต็มสปีด ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
+    }
+    L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
+    return L.join("\n");
+  }
+
+  var SCRIPTS = {
+    car:   {title:"หัวชาร์จในรถ Blisstech", make:scriptCar},
+    cable: {title:"สายชาร์จ",               make:scriptCable},
+    wall:  {title:"หัวชาร์จปลั๊กบ้าน",        make:scriptWall}
+  };
 
   function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}) }
 
@@ -454,7 +506,14 @@
     var searching = !!state.q.trim();
     var words = searching ? [1] : [];
     shown = searching ? search(state.q)
-      : phones.filter(function(p){ return state.filter==="all" || p.cat===state.filter })
+      : phones.filter(function(p){
+          if(state.filter!=="all" && p.cat!==state.filter) return false;
+          if(state.head!=="all"){
+            var b = bestHead(p);
+            if(!b || b.key!==state.head) return false;
+          }
+          return true;
+        })
               .sort(function(a,b){ return b.year-a.year || (b.pd100||0)-(a.pd100||0) });
 
     var lastYear = null;
@@ -483,7 +542,11 @@
         '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(p.note)+'</div>'+
         '<div class="cable">🔗 '+esc(cableTip(p))+'</div>'+
         (p.src ? '<a class="src" href="'+esc(p.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
-        '<button class="copy" data-i="'+i+'">คัดลอกสคริปต์ส่งลูกค้า</button>'+
+        '<button class="copy" data-i="'+i+'" data-kind="car">คัดลอกสคริปต์ หัวชาร์จในรถ</button>'+
+        '<div class="copy-more">'+
+          '<button class="copy sm" data-i="'+i+'" data-kind="cable">🔗 สคริปต์สายชาร์จ</button>'+
+          '<button class="copy sm" data-i="'+i+'" data-kind="wall">🏠 สคริปต์หัวชาร์จบ้าน</button>'+
+        '</div>'+
       '</article>';
     }).join("");
 
@@ -491,7 +554,9 @@
     $("count").innerHTML = "เจอ <b style=\"font-size:16px;color:var(--ink)\">"+shown.length+"</b> รุ่น จากทั้งหมด "+phones.length+" รุ่น";
     $("searchBox").classList.toggle("has", !!state.q);
     var active = words.length ? "all" : state.filter;
-    [].forEach.call(document.querySelectorAll(".chip"), function(c){ c.classList.toggle("on", c.dataset.k===active) });
+    [].forEach.call(document.querySelectorAll("#chips .chip"), function(c){ c.classList.toggle("on", c.dataset.k===active) });
+    var activeHead = words.length ? "all" : state.head;
+    [].forEach.call(document.querySelectorAll("#headChips .chip"), function(c){ c.classList.toggle("on", c.dataset.h===activeHead) });
   }
 
   function toast(msg){
@@ -512,9 +577,10 @@
     } else fallback();
   }
 
-  function openModal(p){
-    var text=script(p);
-    $("mTitle").textContent = fullName(p)+" ("+p.year+")";
+  function openModal(p, kind){
+    var sc = SCRIPTS[kind||"car"];
+    var text=sc.make(p);
+    $("mTitle").textContent = fullName(p)+" · "+sc.title;
     $("mText").value = text;
     $("modal").classList.add("open");
     copyText(text);
@@ -583,6 +649,18 @@
     var n = phones.filter(function(p){return p.cat===b}).length;
     return '<button class="chip" data-k="'+b+'">'+(BRAND_LABEL[b]||b)+' <span class="n">'+n+'</span></button>';
   })).join("");
+  function renderHeadChips(){
+    $("headChips").innerHTML = ['<button class="chip" data-h="all">ทุกรุ่น</button>'].concat(HEADS.map(function(h){
+      var n = phones.filter(function(p){ var b=bestHead(p); return b && b.key===h.key }).length;
+      return '<button class="chip" data-h="'+h.key+'">'+h.name+' <span class="n">'+n+'</span></button>';
+    })).join("");
+  }
+  renderHeadChips();
+  $("headChips").addEventListener("click",function(e){
+    var c=e.target.closest(".chip"); if(!c) return;
+    state.head=c.dataset.h; state.q=""; $("q").value=""; render();
+  });
+
   $("chips").addEventListener("click",function(e){
     var c=e.target.closest(".chip"); if(!c) return;
     state.filter=c.dataset.k; state.q=""; $("q").value=""; render();
@@ -592,7 +670,7 @@
   $("resetAll").addEventListener("click",function(){ state.q=""; state.filter="all"; $("q").value=""; render() });
   $("list").addEventListener("click",function(e){
     var b=e.target.closest(".copy"); if(!b) return;
-    openModal(shown[+b.dataset.i]);
+    openModal(shown[+b.dataset.i], b.dataset.kind);
   });
   $("mCopy").addEventListener("click",function(){ copyText($("mText").value) });
   $("modal").addEventListener("click",function(e){ if(e.target.hasAttribute("data-close")) closeModal() });
@@ -603,6 +681,8 @@
   $("headCount").textContent = phones.length+" รุ่น · ใช้กับหัวชาร์จในรถ Blisstech ได้กี่วัตต์";
   var qb = new URLSearchParams(location.search).get("brand");
   if(qb && BRANDS.indexOf(qb)>-1) state.filter = qb;
+  var qh = new URLSearchParams(location.search).get("head");
+  if(qh && (qh==="all" || HEADS.some(function(h){return h.key===qh}))) state.head = qh;
   var qq = new URLSearchParams(location.search).get("q");
   if(qq){ state.q = qq; $("q").value = qq; }
   $("foot").textContent = "Blisstech Check charge · "+phones.length+" รุ่น · ใช้งานออฟไลน์ได้";
