@@ -109,6 +109,7 @@
   .w .status{font-size:12.5px;padding:3px 9px;margin-bottom:6px}
   .note{margin-top:12px;border-radius:10px;background:var(--sunk);border:1px solid var(--line);padding:10px 12px;font-size:14px;line-height:1.6;color:var(--ink-2)}
   .note b{color:var(--ink);font-weight:700}
+  .cable{margin-top:8px;font-size:13px;color:var(--ink-2);line-height:1.5}
   .src{display:inline-block;font-size:12px;color:var(--muted);margin:-2px 0 10px 2px}
   .src:hover{color:var(--blue)}
   .copy{margin-top:12px;width:100%;height:50px;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;font-size:16px}
@@ -329,6 +330,16 @@
 
   function needs5A(p){ return /5A/.test((p.note||"")+(p.tech||"")); }
 
+  // สายชาร์จที่ลูกค้าควรใช้ (ร้านไม่ได้ขายสาย แต่แนะนำให้ถูกต้อง)
+  function cableTip(p){
+    var isLightning = p.cat==="iPhone" && (/Lightning/i.test(p.tech||"") || /iPhone (12|13|14|SE)/.test(p.model));
+    if(isLightning) return "สาย USB-C to Lightning (รุ่นนี้ยังเป็นช่อง Lightning ครับ)";
+    if(p.pd100==null) return "สาย USB-C to C";
+    var w = wattOn(p, bestHead(p).key);
+    if(w>60 || needs5A(p)) return "สาย USB-C to C ที่รองรับ 5A (100W) ไม่งั้นจะชาร์จไม่ได้เต็มครับ";
+    return "สาย USB-C to C ทั่วไปใช้ได้เลยครับ";
+  }
+
   function fullName(p){
     return p.model.toLowerCase().indexOf(p.brand.toLowerCase())===0 ? p.model : p.brand+" "+p.model;
   }
@@ -341,6 +352,7 @@
     if(batt || techLine(p)) L.push("🔋 "+(batt ? "แบต "+batt : "")+(batt && techLine(p) ? " · " : "")+(techLine(p) ? "ชาร์จแท้ "+techLine(p) : ""));
     if(samsungTier(p)) L.push("🔌 "+samsungTier(p));
     chargeLines(p).forEach(function(x){ L.push(x) });
+    L.push("🔗 สายชาร์จที่ควรใช้: "+cableTip(p));
     L.push("", "💡 "+advice(p));
     L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
     return L.join("\n");
@@ -469,6 +481,7 @@
           }).join("")+
         '</div>'+
         '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(p.note)+'</div>'+
+        '<div class="cable">🔗 '+esc(cableTip(p))+'</div>'+
         (p.src ? '<a class="src" href="'+esc(p.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
         '<button class="copy" data-i="'+i+'">คัดลอกสคริปต์ส่งลูกค้า</button>'+
       '</article>';
