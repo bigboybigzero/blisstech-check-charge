@@ -327,14 +327,16 @@
     var out = [];
     if(native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
     out.push("⚡ หัวชาร์จในรถ Blisstech");
-    // เริ่มที่รุ่นเล็กเสมอ ให้ลูกค้าเห็นว่าพอไหม แล้วค่อยเสนอรุ่นที่เหมาะที่สุด
-    if(best.key==="mini"){
-      out.push("• รุ่น Mini 36W → ได้ประมาณ "+Math.floor(wMini)+"W"+
-        (p.pd100>=18 ? " (พอสำหรับเครื่องนี้แล้วครับ)" : " (ซื้อรุ่นใหญ่กว่าก็ได้เท่านี้ เพราะเครื่องรับได้เท่านี้ครับ)"));
-    } else {
-      out.push("• รุ่น Mini 36W → ได้ประมาณ "+(wMini==null ? "ขอเช็คหน้าร้าน" : Math.floor(wMini)+"W"));
-      out.push("• แนะนำรุ่น "+best.name+" → ได้ประมาณ "+Math.floor(wattOn(p,best.key))+"W (เร็วที่สุดสำหรับเครื่องนี้)");
-    }
+    var wMiniN = Math.floor(wMini==null ? 0 : wMini), wAmb = Math.floor(wattOn(p,"amb"));
+    // รุ่น Mini ก่อนเสมอ แล้วตามด้วย Ambient Light 55W ให้ลูกค้าเห็นทางเลือกทุกครั้ง
+    out.push("• รุ่น Mini 36W → ได้ประมาณ "+(wMini==null ? "ขอเช็คหน้าร้าน" : wMiniN+"W")+
+      (best.key==="mini" ? (p.pd100>=18 ? " (พอสำหรับเครื่องนี้แล้วครับ)" : " (เครื่องรับได้เท่านี้ครับ)") : ""));
+    out.push("• รุ่น Ambient Light 55W → ได้ประมาณ "+wAmb+"W"+
+      (best.key==="amb" ? " (แนะนำสำหรับเครื่องนี้ เร็วที่สุดแล้วครับ)"
+       : wAmb>wMiniN ? " (เร็วกว่ารุ่น Mini ครับ)"
+       : " (ได้เท่ารุ่น Mini แต่มีไฟแอมเบียนท์ในรถ)"));
+    if(best.key==="pro")
+      out.push("• แนะนำรุ่น Pro 100W → ได้ประมาณ "+Math.floor(wattOn(p,"pro"))+"W (เร็วที่สุดสำหรับเครื่องนี้)");
     return out;
   }
 
