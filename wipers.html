@@ -160,6 +160,7 @@
   .sz b{display:block;font-size:30px;font-weight:800;line-height:1.1;margin-top:2px}
   .sz b i{font-style:normal;font-size:16px;font-weight:700;opacity:.6;margin-left:1px}
   .sz.none b{color:var(--muted);font-size:20px;margin-top:8px}
+  .t-ver{background:var(--green-bg);color:var(--green);font-weight:600}
   .fit{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:7px 13px;border-radius:9px;margin-top:12px}
   .fit.ok{background:var(--green-bg);color:var(--green)}
   .fit.no{background:var(--red-bg);color:var(--red)}
@@ -260,7 +261,7 @@
       return '<article class="phone">'+
         '<div class="row1"><div class="ident"><div style="min-width:0">'+
           '<div class="tags"><span class="bname">'+esc(c.brand)+'</span><span class="tag y-new">'+esc(c.gen)+'</span>'+
-            (c.conf==="low" ? '<span class="tag t-est">ข้อมูลยังไม่ชัด</span>' : '')+'</div>'+
+            (c.verified ? '<span class="tag t-ver">✓ ตรวจแล้ว</span>' : c.conf==="low" ? '<span class="tag t-est">ข้อมูลยังไม่ชัด</span>' : '')+'</div>'+
           '<div class="model">'+esc(c.model)+'</div>'+
           '<div class="tech">ขนาดใบปัด (นิ้ว)</div>'+
         '</div></div></div>'+
