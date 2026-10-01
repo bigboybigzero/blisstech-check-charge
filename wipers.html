@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4559db"><title>Blisstech Check charge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f4f8; --card:#ffffff; --sunk:#f7f8fb;
+    --ink:#1f2330; --ink-2:#4a4f5e; --muted:#7a7f8e; --line:#d9dbe3; --line-2:#c6c9d3;
+    --blue:#4559db; --blue-dark:#3446c4; --blue-soft:#eef0fc; --blue-line:#cfd5f6;
+    --green:#1f9d63; --green-bg:#e6f6ee;
+    --yellow:#b7860b; --yellow-bg:#fdf4dc;
+    --red:#d24b43; --red-bg:#fdecea;
+    --shadow:0 1px 3px rgba(31,35,48,.06),0 6px 20px rgba(31,35,48,.05);
+    --th:"Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--th);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5}
+  button{font:inherit;cursor:pointer;border:0;color:inherit}
+  button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .wrap{max-width:1280px;margin:0 auto;padding:16px}
+
+  header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px}
+  .logo{width:40px;height:40px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0}
+  .brand b{font-size:16px;font-weight:700;display:block;line-height:1.3}
+  .brand small{font-size:12.5px;color:var(--muted)}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+  h1{display:flex;align-items:center;gap:10px;font-size:28px;font-weight:800;line-height:1.2;color:var(--blue)}
+  h1::before{content:"";width:18px;height:18px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px var(--blue-soft);flex-shrink:0}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{height:44px;padding:0 18px;border-radius:10px;font-weight:600;font-size:15px;background:var(--blue);color:#fff}
+  .btn:hover{background:var(--blue-dark)}
+  .btn.outline{background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .btn.outline:hover{background:var(--blue-soft)}
+  .btn:active{transform:scale(.98)}
+
+  .search{position:relative;margin-top:16px}
+  .search input{width:100%;height:58px;padding:0 52px;border-radius:10px;border:1px solid var(--line-2);background:#fff;font:inherit;font-size:18px;color:var(--ink)}
+  .search input::placeholder{color:var(--muted)}
+  .search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .search .ico{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--muted)}
+  .search .clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:8px;background:var(--blue-soft);color:var(--blue);font-weight:700;display:none}
+  .search.has .clear{display:block}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;margin-top:14px;padding-bottom:4px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--line-2);background:#fff;font-weight:600;font-size:15px;white-space:nowrap;flex-shrink:0;color:var(--ink-2)}
+  .chip:hover{border-color:var(--blue);color:var(--blue)}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .chip .n{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+  .chip.on .n{color:rgba(255,255,255,.75)}
+  .yhead{grid-column:1/-1;display:flex;align-items:center;gap:12px;font-size:17px;font-weight:700;color:var(--blue);margin:12px 2px 0}
+  .yhead::after{content:"";flex:1;height:1px;background:var(--line)}
+  .yhead:first-child{margin-top:0}
+
+  .headpick{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .headpick-label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+  .headpick .chips{margin-top:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;margin-top:14px;font-size:14px;color:var(--ink-2)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+  .list{margin-top:16px;display:grid;gap:12px}
+  .phone{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .phone.new{border-color:var(--blue-line)}
+  .row1{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .ident{display:flex;gap:14px;align-items:center;min-width:0}
+  .thumb{width:84px;height:112px;flex-shrink:0;border-radius:12px;background:#fff;border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
+  .thumb img{width:100%;height:100%;object-fit:contain}
+  .thumb.noimg{background:var(--sunk);border-style:dashed}
+  .thumb.noimg span{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:4px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .bname{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+  .tag{font-size:12px;font-weight:600;padding:1px 8px;border-radius:6px;border:1px solid transparent}
+  .y-old{background:var(--sunk);color:var(--muted);border-color:var(--line)}
+  .y-mid{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+  .y-new{background:var(--blue-soft);color:var(--blue);border-color:var(--blue-line)}
+  .t-new,.t-newest{background:var(--blue);color:#fff}
+  .t-est{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
+  .b-measured{background:var(--green-bg);color:var(--green)}
+  .b-official{background:var(--blue-soft);color:var(--blue)}
+  .b-derived{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+  .b-none{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
+  .s-unk{background:var(--sunk);color:var(--muted);border:1px dashed var(--line-2)}
+  .model{font-size:21px;font-weight:800;line-height:1.25;margin-top:6px;color:var(--ink)}
+  .tech{font-size:13px;color:var(--muted);margin-top:2px}
+  .status{flex-shrink:0;font-size:14px;font-weight:700;padding:5px 12px;border-radius:8px}
+  .s-green{background:var(--green-bg);color:var(--green)}
+  .s-yellow{background:var(--yellow-bg);color:var(--yellow)}
+  .s-red{background:var(--red-bg);color:var(--red)}
+
+  .watts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .w{border-radius:12px;padding:10px 11px;border:1px solid var(--line)}
+  .w{background:var(--sunk)}
+  .w.best{background:var(--blue-soft);border-color:var(--blue-line)}
+  .w.best small{color:var(--blue)}
+  .w.best b{color:var(--blue)}
+  .w small{font-size:12px;font-weight:600;color:var(--ink-2)}
+  .w.light small{color:var(--blue)}
+  .w .num{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin-top:2px}
+  .w b{font-size:30px;font-weight:800;line-height:1.05;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .w.light b{color:var(--blue)}
+  .w b i{font-style:normal;font-size:20px;font-weight:700;margin-left:1px;opacity:.7}
+  .w .status{font-size:12.5px;padding:3px 9px;margin-bottom:6px}
+  .note{margin-top:12px;border-radius:10px;background:var(--sunk);border:1px solid var(--line);padding:10px 12px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .note b{color:var(--ink);font-weight:700}
+  .cable{margin-top:8px;font-size:13px;color:var(--ink-2);line-height:1.5}
+  .src{display:inline-block;font-size:12px;color:var(--muted);margin:-2px 0 10px 2px}
+  .src:hover{color:var(--blue)}
+  .copy{margin-top:12px;width:100%;height:50px;border-radius:10px;background:var(--blue);color:#fff;font-weight:700;font-size:16px}
+  .copy:hover{background:var(--blue-dark)}
+  .copy:active{transform:scale(.98)}
+  .phone .copy{margin-top:auto}
+  .copy-more{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .copy.sm{margin-top:0;height:40px;font-size:13.5px;background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .copy.sm:hover{background:var(--blue-soft)}
+  .phone .note{margin-bottom:10px}
+
+  @media (min-width:900px){ .list{grid-template-columns:repeat(2,1fr)} }
+  @media (min-width:1200px){ .list{grid-template-columns:repeat(3,1fr)} }
+
+  .empty{text-align:center;padding:60px 16px;display:none}
+  .empty b{font-size:20px}
+  .empty p{color:var(--muted);margin:8px 0 18px}
+
+  .guide{margin-top:20px;display:grid;gap:10px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+  .guide div{display:flex;gap:10px;align-items:flex-start}
+  .guide .status{min-width:70px;text-align:center}
+  footer{text-align:center;font-size:12.5px;color:var(--muted);padding:28px 0 40px}
+
+  .modal{position:fixed;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .modal .bg{position:absolute;inset:0;background:rgba(31,35,48,.45);backdrop-filter:blur(3px)}
+  .sheet{position:relative;width:100%;max-width:520px;background:var(--card);border-radius:16px 16px 0 0;padding:22px;animation:up .22s ease}
+  @media (min-width:640px){.modal{align-items:center}.sheet{border-radius:16px}}
+  @keyframes up{from{transform:translateY(18px);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.sheet{animation:none}.toast{transition:none}}
+  .sheet h3{font-size:20px;font-weight:800;color:var(--blue);padding-right:44px}
+  .sheet .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .sheet textarea{width:100%;min-height:220px;margin-top:14px;border-radius:10px;border:1px solid var(--line-2);background:#fff;padding:14px;font:inherit;font-size:15px;line-height:1.65;color:var(--ink);resize:vertical}
+  .sheet textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .sheet .row{display:flex;gap:10px;margin-top:14px}
+  .sheet .row .copy{margin:0;flex:1}
+  .sheet .row .btn{height:50px;background:#fff;color:var(--blue);border:1px solid var(--blue-line)}
+  .x{position:absolute;right:16px;top:16px;width:34px;height:34px;border-radius:8px;background:var(--sunk);border:1px solid var(--line)!important;color:var(--ink-2)}
+
+  .toast{position:fixed;left:50%;top:20px;transform:translateX(-50%) translateY(-20px);opacity:0;z-index:50;background:var(--ink);color:#fff;font-weight:600;font-size:15px;padding:11px 20px;border-radius:10px;transition:.2s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+<style>
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{flex:1;height:46px;border-radius:12px;border:1px solid var(--line-2);background:#fff;font-weight:700;font-size:15px;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+  .tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .sizes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .sz{border:1px solid var(--line);background:var(--sunk);border-radius:12px;padding:10px 11px}
+  .sz small{font-size:12px;font-weight:600;color:var(--ink-2)}
+  .sz b{display:block;font-size:30px;font-weight:800;line-height:1.1;margin-top:2px}
+  .sz b i{font-style:normal;font-size:16px;font-weight:700;opacity:.6;margin-left:1px}
+  .sz.none b{color:var(--muted);font-size:20px;margin-top:8px}
+  .fit{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;padding:7px 13px;border-radius:9px;margin-top:12px}
+  .fit.ok{background:var(--green-bg);color:var(--green)}
+  .fit.no{background:var(--red-bg);color:var(--red)}
+  .fit.unk{background:var(--sunk);color:var(--muted);border:1px dashed var(--line-2)}
+</style></head><body>
+<header><div class="wrap">
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M13.5 2 4.5 13.5h6L9.5 22l10-12.5h-6.2L13.5 2z"/></svg></div>
+  <div class="brand"><b>Blisstech Check charge</b><small id="headCount">ใบปัดน้ำฝน · เช็คขนาดและชนิดก้าน</small></div>
+</div></header>
+<main class="wrap">
+  <nav class="tabs">
+    <a class="tab" href="index.html">⚡ เช็คชาร์จมือถือ</a>
+    <a class="tab on" href="wipers.html">🚗 ใบปัดน้ำฝน</a>
+  </nav>
+  <section class="panel">
+    <h1>เช็คขนาดใบปัดน้ำฝน</h1>
+    <div class="search" id="searchBox"><span class="ico">⌕</span>
+      <input id="q" type="search" autocomplete="off" placeholder="พิมพ์รุ่นรถ เช่น ranger, atto 3, เรนเจอร์">
+      <button class="clear" id="clearQ" aria-label="ล้าง">✕</button></div>
+    <div class="chips" id="brandChips"></div>
+    <div class="headpick">
+      <span class="headpick-label">ใบ J-hook ของร้าน</span>
+      <div class="chips" id="fitChips"></div>
+    </div>
+    <div class="meta"><div id="count"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--green)"></i>J-hook ใส่ได้</span>
+        <span><i class="dot" style="background:var(--red)"></i>ก้านคนละแบบ</span>
+        <span><i class="dot" style="background:var(--line-2)"></i>ยังไม่ยืนยัน</span>
+      </div></div>
+  </section>
+  <section class="list" id="list"></section>
+  <div class="empty" id="empty"><b>ไม่เจอรุ่นรถที่ค้นหา</b><p>ลองพิมพ์ใหม่ เช่น ranger, everest, atto</p></div>
+  <footer id="foot"></footer>
+</main>
+
+<div class="modal" id="modal">
+  <div class="bg" data-close></div>
+  <div class="sheet">
+    <button class="x" data-close aria-label="ปิด">✕</button>
+    <h3 id="mTitle"></h3><div class="sub">คัดลอกให้แล้ว แก้ข้อความก่อนส่งได้</div>
+    <textarea id="mText"></textarea>
+    <div class="row"><button class="copy" id="mCopy">คัดลอกอีกครั้ง</button>
+      <button class="btn" data-close>ปิด</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="wipers.js"></script>
+<script>
+(function(){
+  var cars = window.CARS || [], shown = [], state = {q:"", brand:"all", fit:"all"};
+  var $ = function(id){ return document.getElementById(id) };
+  function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]}) }
+  function inch(v){ return v==null ? null : (Math.round(v*10)/10) }
+  function fitsOurs(c){ return c.fitting==="J-hook" ? "ok" : c.fitting==null ? "unk" : "no" }
+
+  function fitBadge(c){
+    var k=fitsOurs(c);
+    if(k==="ok")  return '<span class="fit ok">✓ ก้าน J-hook · ใบของร้านใส่ได้</span>';
+    if(k==="unk") return '<span class="fit unk">? ยังไม่ยืนยันชนิดก้าน ต้องดูที่รถก่อน</span>';
+    return '<span class="fit no">✕ ก้านแบบ '+esc(c.fitting)+' · ใบ J-hook ใส่ไม่ได้</span>';
+  }
+  function szBox(label,v){
+    if(v==null) return '<div class="sz none"><small>'+label+'</small><b>ไม่มี</b></div>';
+    return '<div class="sz"><small>'+label+'</small><b>'+v+'<i>"</i></b></div>';
+  }
+  function script(c){
+    var L=["🚗 "+c.brand+" "+c.model+" ("+c.gen+")", "", "📏 ขนาดใบปัดน้ำฝน",
+      "• ฝั่งคนขับ "+(c.driver==null?"ขอเช็คที่รถครับ":c.driver+" นิ้ว"),
+      "• ฝั่งผู้โดยสาร "+(c.passenger==null?"ขอเช็คที่รถครับ":c.passenger+" นิ้ว"),
+      "• ใบหลัง "+(c.rear==null?"ไม่มีครับ":c.rear+" นิ้ว"), ""];
+    var k=fitsOurs(c);
+    if(k==="ok") L.push("🔩 ก้านปัดเป็นแบบ J-hook", "💡 ใบปัดของ Blisstech ใส่ได้เลยครับ");
+    else if(k==="no") L.push("🔩 ก้านปัดเป็นแบบ "+c.fitting, "💡 รุ่นนี้ใช้ใบแบบ J-hook ไม่ได้ครับ ต้องใช้ใบที่ตรงกับก้านแบบนี้");
+    else L.push("💡 รุ่นนี้ขอดูก้านปัดที่รถก่อนนะครับ จะได้แนะนำใบที่ใส่ได้ถูกต้อง");
+    L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
+    return L.join("\n");
+  }
+
+  var BRANDS = [], FITS = [{k:"ok",label:"ใส่ได้ (J-hook)"},{k:"no",label:"ใส่ไม่ได้"},{k:"unk",label:"ยังไม่ยืนยัน"}];
+  cars.forEach(function(c){ if(BRANDS.indexOf(c.brand)<0) BRANDS.push(c.brand) });
+  BRANDS.sort();
+
+  function render(){
+    var q = state.q.trim().toLowerCase();
+    shown = cars.filter(function(c){
+      if(q){
+        var hay = (c.brand+" "+c.model+" "+c.gen).toLowerCase();
+        if(hay.indexOf(q)<0) return false;
+      }
+      if(state.brand!=="all" && c.brand!==state.brand) return false;
+      if(state.fit!=="all" && fitsOurs(c)!==state.fit) return false;
+      return true;
+    }).sort(function(a,b){ return a.brand.localeCompare(b.brand) || (b.yearFrom||0)-(a.yearFrom||0) });
+
+    $("list").innerHTML = shown.map(function(c,i){
+      return '<article class="phone">'+
+        '<div class="row1"><div class="ident"><div style="min-width:0">'+
+          '<div class="tags"><span class="bname">'+esc(c.brand)+'</span><span class="tag y-new">'+esc(c.gen)+'</span>'+
+            (c.conf==="low" ? '<span class="tag t-est">ข้อมูลยังไม่ชัด</span>' : '')+'</div>'+
+          '<div class="model">'+esc(c.model)+'</div>'+
+          '<div class="tech">ขนาดใบปัด (นิ้ว)</div>'+
+        '</div></div></div>'+
+        '<div class="sizes">'+szBox("ฝั่งคนขับ",inch(c.driver))+szBox("ฝั่งผู้โดยสาร",inch(c.passenger))+szBox("ใบหลัง",inch(c.rear))+'</div>'+
+        fitBadge(c)+
+        (c.note ? '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(c.note)+'</div>' : '')+
+        (c.src ? '<a class="src" href="'+esc(c.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
+        '<button class="copy" data-i="'+i+'">คัดลอกสคริปต์ ใบปัดน้ำฝน</button>'+
+      '</article>';
+    }).join("");
+    $("empty").style.display = shown.length ? "none" : "block";
+    $("count").innerHTML = "เจอ <b>"+shown.length+"</b> รุ่น จากทั้งหมด "+cars.length+" รุ่น";
+    $("searchBox").classList.toggle("has", !!state.q);
+    [].forEach.call(document.querySelectorAll("#brandChips .chip"), function(x){ x.classList.toggle("on", x.dataset.b===state.brand) });
+    [].forEach.call(document.querySelectorAll("#fitChips .chip"), function(x){ x.classList.toggle("on", x.dataset.f===state.fit) });
+  }
+
+  function toast(m){ var t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(function(){t.classList.remove("show")},2500) }
+  function copyText(text){
+    function fb(){ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select(); var ok=false; try{ok=document.execCommand("copy")}catch(e){}; ta.remove();
+      toast(ok?"คัดลอกแล้ว ✅":"คัดลอกไม่สำเร็จ กดค้างที่ข้อความเพื่อคัดลอกเอง") }
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function(){toast("คัดลอกแล้ว ✅")}, fb); else fb();
+  }
+
+  $("brandChips").innerHTML = ['<button class="chip" data-b="all">ทุกยี่ห้อ <span class="n">'+cars.length+'</span></button>']
+    .concat(BRANDS.map(function(b){
+      var n=cars.filter(function(c){return c.brand===b}).length;
+      return '<button class="chip" data-b="'+esc(b)+'">'+esc(b)+' <span class="n">'+n+'</span></button>';
+    })).join("");
+  $("fitChips").innerHTML = ['<button class="chip" data-f="all">ทั้งหมด</button>']
+    .concat(FITS.map(function(f){
+      var n=cars.filter(function(c){return fitsOurs(c)===f.k}).length;
+      return '<button class="chip" data-f="'+f.k+'">'+f.label+' <span class="n">'+n+'</span></button>';
+    })).join("");
+
+  $("brandChips").addEventListener("click",function(e){ var c=e.target.closest(".chip"); if(!c) return; state.brand=c.dataset.b; render() });
+  $("fitChips").addEventListener("click",function(e){ var c=e.target.closest(".chip"); if(!c) return; state.fit=c.dataset.f; render() });
+  $("q").addEventListener("input",function(e){ state.q=e.target.value; render() });
+  $("clearQ").addEventListener("click",function(){ state.q=""; $("q").value=""; render() });
+  $("list").addEventListener("click",function(e){
+    var b=e.target.closest(".copy"); if(!b) return;
+    var c=shown[+b.dataset.i], text=script(c);
+    $("mTitle").textContent = c.brand+" "+c.model; $("mText").value=text;
+    $("modal").classList.add("open"); copyText(text);
+  });
+  $("mCopy").addEventListener("click",function(){ copyText($("mText").value) });
+  $("modal").addEventListener("click",function(e){ if(e.target.hasAttribute("data-close")) $("modal").classList.remove("open") });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") $("modal").classList.remove("open") });
+
+  $("headCount").textContent = cars.length+" รุ่นรถ · ขนาดใบปัดและชนิดก้าน";
+  $("foot").textContent = "Blisstech Check charge · ข้อมูลใบปัดน้ำฝน "+cars.length+" รุ่น (กำลังเพิ่มเติม)";
+  render();
+})();
+</script></body></html>
