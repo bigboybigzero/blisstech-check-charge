@@ -279,8 +279,18 @@
     return HEADS[2];
   }
 
-  function level(w){ return w==null ? "unk" : w>=30 ? "green" : w>=18 ? "yellow" : "red" }
-  var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า", unk:"ยังไม่ยืนยัน"};
+  // เทียบกับสปีดสูงสุดของเครื่องรุ่นนั้น: ได้เท่าที่เครื่องรับได้ = เต็ม
+  function level(w, p){
+    if(w==null) return "unk";
+    var nat = p ? nativeW(p) : null;
+    if(nat){
+      if(w >= nat*0.9) return "green";
+      if(w >= nat*0.5) return "yellow";
+      return "red";
+    }
+    return w>=30 ? "green" : w>=18 ? "yellow" : "red";
+  }
+  var LABEL = {green:"ชาร์จได้เต็ม", yellow:"ชาร์จได้ดี", red:"ช้ากว่าหัวแท้", unk:"ยังไม่ยืนยัน"};
   var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", estimate:"ค่าประมาณ", none:"ยังไม่ยืนยัน"};
   function watt(w){ return w==null ? "—" : w }
 
@@ -327,6 +337,18 @@
   }
 
   // บอกวัตต์ที่ใช้ได้จริงกับหัวของร้าน และอธิบายเรื่องหัวแท้เมื่อเครื่องรองรับได้สูงกว่านั้นมาก
+  // เครื่องนี้ได้เต็มสปีดกับหัวนี้ไหม
+  function isFull(p,w){
+    var nat=nativeW(p);
+    return w!=null && nat ? w >= nat*0.9 : false;
+  }
+  function headResult(p,w){
+    if(w==null) return "ขอเช็คหน้าร้าน";
+    if(isFull(p,w)) return "ชาร์จได้เต็มสปีดของเครื่อง";
+    if(p.cat==="Samsung" && w>=25) return "ชาร์จด่วนพิเศษ (เร็วสุดที่หัวนี้จ่ายได้)";
+    return "ได้ประมาณ "+Math.floor(w)+"W";
+  }
+
   function chargeLines(p){
     if(p.pd100==null) return [];
     var native = nativeW(p);
@@ -337,14 +359,16 @@
     out.push("⚡ หัวชาร์จในรถ Blisstech");
     var wMiniN = Math.floor(wMini==null ? 0 : wMini), wAmb = Math.floor(wattOn(p,"amb"));
     // รุ่น Mini ก่อนเสมอ แล้วตามด้วย Ambient Light 55W ให้ลูกค้าเห็นทางเลือกทุกครั้ง
-    out.push("• รุ่น Mini 36W → ได้ประมาณ "+(wMini==null ? "ขอเช็คหน้าร้าน" : wMiniN+"W")+
-      (best.key==="mini" ? (p.pd100>=18 ? " (พอสำหรับเครื่องนี้แล้วครับ)" : " (เครื่องรับได้เท่านี้ครับ)") : ""));
-    out.push("• รุ่น Ambient Light 55W → ได้ประมาณ "+wAmb+"W"+
-      (best.key==="amb" ? " (แนะนำสำหรับเครื่องนี้ เร็วที่สุดแล้วครับ)"
+    out.push("• รุ่น Mini 36W → "+headResult(p,wMini)+
+      (best.key==="mini" && !isFull(p,wMini) ? " (เครื่องรุ่นนี้รับได้เท่านี้ครับ)" : ""));
+    var ambW = wattOn(p,"amb");
+    out.push("• รุ่น Ambient Light 55W → "+headResult(p,ambW)+
+      (isFull(p,ambW) ? ""
+       : best.key==="amb" ? " (เร็วที่สุดสำหรับเครื่องนี้)"
        : wAmb>wMiniN ? " (เร็วกว่ารุ่น Mini ครับ)"
        : " (ได้เท่ารุ่น Mini แต่มีไฟแอมเบียนท์ในรถ)"));
     if(best.key==="pro")
-      out.push("• แนะนำรุ่น Pro 100W → ได้ประมาณ "+Math.floor(wattOn(p,"pro"))+"W (เร็วที่สุดสำหรับเครื่องนี้)");
+      out.push("• รุ่น Pro 100W → "+headResult(p,wattOn(p,"pro"))+" (เร็วที่สุดสำหรับเครื่องนี้)");
     return out;
   }
 
@@ -530,7 +554,7 @@
     $("list").innerHTML = shown.map(function(p,i){
       var yearHead = (!searching && p.year!==lastYear) ? '<h2 class="yhead">ปี '+p.year+'</h2>' : "";
       lastYear = p.year;
-      var l100 = level(p.pd100), l36 = level(p.pd36);
+      var l100 = level(p.pd100,p), l36 = level(p.pd36,p);
       var cls = p.isNewest ? "newest" : p.isNew ? "new" : "";
       var tag = (p.isNew ? '<span class="tag t-new">NEW</span>' : "") +
                 '<span class="tag b-'+p.basis+'">'+BASIS[p.basis]+'</span>';
@@ -542,7 +566,7 @@
         '</div></div><span class="status s-'+l100+'">'+LABEL[l100]+'</span></div>'+
         '<div class="watts">'+
           HEADS.map(function(h){
-            var w = wattOn(p,h.key), lv = level(w), best = bestHead(p);
+            var w = wattOn(p,h.key), lv = level(w,p), best = bestHead(p);
             return '<div class="w'+(best&&best.key===h.key?' best':'')+'">'+
               '<small>'+h.name+'</small>'+
               '<div class="num"><b>'+watt(w)+(w==null?'':'<i>W</i>')+'</b>'+
@@ -608,7 +632,7 @@
     var q=function(s){ return '"'+String(s).replace(/"/g,'""')+'"' };
     var head=["ยี่ห้อ","รุ่น","ปี","เทคโนโลยีชาร์จแท้","แบต","PD 36W (W)","PD 100W (W)","ต้องบอกลูกค้า","สถานะ","ที่มาตัวเลข"];
     var lines=[head.map(q).join(",")].concat(shown.map(function(p){
-      return [p.brand,p.model,p.year,p.tech,p.battery,watt(p.pd36),watt(p.pd100),p.note,LABEL[level(p.pd100)],BASIS[p.basis]].map(q).join(",");
+      return [p.brand,p.model,p.year,p.tech,p.battery,watt(p.pd36),watt(p.pd100),p.note,LABEL[level(p.pd100,p)],BASIS[p.basis]].map(q).join(",");
     }));
     var url=URL.createObjectURL(new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"}));
     download(url,"Blisstech_Check_charge_"+stamp()+".csv");
@@ -633,7 +657,7 @@
     var x=pad+6; cols.forEach(function(c){ g.fillText(c.t,x,y+21); x+=c.w });
     y+=headH;
     var pill=function(w,x){
-      var l=level(w); g.fillStyle={green:"#1f9d63",yellow:"#e0a91b",red:"#d24b43",unk:"#c6c9d3"}[l];
+      var l=level(w,p); g.fillStyle={green:"#1f9d63",yellow:"#e0a91b",red:"#d24b43",unk:"#c6c9d3"}[l];
       if(g.roundRect){ g.beginPath(); g.roundRect(x,y+7,50,18,9); g.fill() } else g.fillRect(x,y+7,50,18);
       g.fillStyle=l==="yellow"?"#18181b":"#fff"; g.font="bold 11px "+font; g.fillText(w==null?"—":w+"W",x+12,y+20);
     };
