@@ -91,6 +91,7 @@
   .b-measured{background:var(--green-bg);color:var(--green)}
   .b-official{background:var(--blue-soft);color:var(--blue)}
   .b-derived{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+  .b-estimate{font-weight:500;background:var(--yellow-bg);color:#94681c;border:1px dashed #e3c37a}
   .b-none{font-weight:500;background:#fff;color:var(--muted);border:1px dashed var(--line-2)}
   .s-unk{background:var(--sunk);color:var(--muted);border:1px dashed var(--line-2)}
   .model{font-size:21px;font-weight:800;line-height:1.25;margin-top:6px;color:var(--ink)}
@@ -220,7 +221,7 @@
     <div><span class="status s-yellow">ได้กลาง</span><span><b>18–29W</b> เร็วระดับกลาง ลูกค้ารอได้ แนะนำหัว PD 100W ที่รองรับ PPS</span></div>
     <div><span class="status s-red">ได้ช้า</span><span><b>&lt;18W</b> ชาร์จได้ ไม่พัง แต่ช้า ถ้าอยากได้เร็วต้องใช้หัวแท้ของยี่ห้อนั้น</span></div>
     <div><span class="status s-unk">ยังไม่ยืนยัน</span><span>ยังไม่มีผลทดสอบหรือสเปคทางการบอกวัตต์กับหัวทั่วไป จึงไม่ใส่ตัวเลข ควรวัดด้วยมิเตอร์ก่อนแจ้งลูกค้า</span></div>
-    <div style="color:var(--muted)">ที่มาตัวเลข: <b>วัดจริง</b> = มีผลวัดจากแล็บ/รีวิว · <b>สเปคทางการ</b> = ผู้ผลิตระบุ · <b>คำนวณจากสเปค</b> = คิดจากแรงดัน/กระแสที่ผู้ผลิตระบุ · หัวชาร์จในรถ Blisstech: Mini 36W · Ambient Light 55W · Pro 100W (PD3.0 + PPS ไม่มี AVS) · รุ่น 55W คิดจากค่าหัว 100W แต่จำกัดที่ 55W · Samsung 45W และ Xiaomi/OPPO รุ่นใหม่ต้องใช้สาย 5A</div>
+    <div style="color:var(--muted)">ที่มาตัวเลข: <b>วัดจริง</b> = มีผลวัดจากแล็บ/รีวิว · <b>สเปคทางการ</b> = ผู้ผลิตระบุ · <b>คำนวณจากสเปค</b> = คิดจากแรงดัน/กระแสที่ผู้ผลิตระบุ · <b>ค่าประมาณ</b> = อนุมานจากรุ่นใกล้เคียงของแบรนด์เดียวกัน ยังไม่ได้วัดรุ่นนี้ · หัวชาร์จในรถ Blisstech: Mini 36W · Ambient Light 55W · Pro 100W (PD3.0 + PPS ไม่มี AVS) · รุ่น 55W คิดจากค่าหัว 100W แต่จำกัดที่ 55W · Samsung 45W และ Xiaomi/OPPO รุ่นใหม่ต้องใช้สาย 5A</div>
   </section>
 
   <footer id="foot"></footer>
@@ -280,7 +281,7 @@
 
   function level(w){ return w==null ? "unk" : w>=30 ? "green" : w>=18 ? "yellow" : "red" }
   var LABEL = {green:"ได้เต็ม", yellow:"ได้กลาง", red:"ได้ช้า", unk:"ยังไม่ยืนยัน"};
-  var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", none:"ยังไม่ยืนยัน"};
+  var BASIS = {measured:"วัดจริง", official:"สเปคทางการ", derived:"คำนวณจากสเปค", estimate:"ค่าประมาณ", none:"ยังไม่ยืนยัน"};
   function watt(w){ return w==null ? "—" : w }
 
   // ประโยคแนะนำสำหรับลูกค้า (ไม่ใช้ศัพท์เทคนิค)
@@ -376,9 +377,13 @@
     var L=headLine(p);
     if(samsungTier(p)) L.push("🔌 "+samsungTier(p));
     chargeLines(p).forEach(function(x){ L.push(x) });
-    L.push("", "💡 "+advice(p));
+    L.push("", "💡 "+advice(p)+approxNote(p));
     L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
     return L.join("\n");
+  }
+
+  function approxNote(p){
+    return p.basis==="estimate" ? "\n(ตัวเลขนี้เป็นค่าประมาณจากรุ่นใกล้เคียง ถ้าอยากชัวร์ เอาเครื่องมาวัดที่ร้านได้เลยครับ)" : "";
   }
 
   // 2) สคริปต์สายชาร์จ (ร้านไม่ได้ขาย ให้คำแนะนำอย่างเดียว)
@@ -404,7 +409,7 @@
     if(w==null){
       L.push("• รุ่นนี้ขอเช็คกับเครื่องจริงที่หน้าร้านก่อนนะครับ จะได้แนะนำขนาดที่พอดี");
     } else {
-      L.push("• หัว PD/PPS ขนาด "+w+"W ก็พอครับ ซื้อใหญ่กว่านี้เครื่องก็ดึงไฟได้เท่าเดิม");
+      L.push("• หัว PD/PPS ขนาด "+w+"W ก็พอครับ ซื้อใหญ่กว่านี้เครื่องก็ดึงไฟได้เท่าเดิม"+(p.basis==="estimate"?" (ค่าประมาณ)":""));
       if(needs5A(p)) L.push("• ต้องใช้คู่กับสายที่รองรับ 5A ถึงจะได้เต็มครับ");
       var nat = nativeW(p);
       if(nat && nat > p.pd100 + 5) L.push("• ถ้าอยากได้ "+nat+"W เต็มสปีด ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
