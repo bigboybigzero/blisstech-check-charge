@@ -377,13 +377,9 @@
     var L=headLine(p);
     if(samsungTier(p)) L.push("🔌 "+samsungTier(p));
     chargeLines(p).forEach(function(x){ L.push(x) });
-    L.push("", "💡 "+advice(p)+approxNote(p));
+    L.push("", "💡 "+advice(p));
     L.push("", "สอบถามเพิ่มเติมได้เลยครับ 🙏");
     return L.join("\n");
-  }
-
-  function approxNote(p){
-    return p.basis==="estimate" ? "\n(ตัวเลขนี้เป็นค่าประมาณจากรุ่นใกล้เคียง ถ้าอยากชัวร์ เอาเครื่องมาวัดที่ร้านได้เลยครับ)" : "";
   }
 
   // 2) สคริปต์สายชาร์จ (ร้านไม่ได้ขาย ให้คำแนะนำอย่างเดียว)
