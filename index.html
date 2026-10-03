@@ -342,10 +342,20 @@
     var nat=nativeW(p);
     return w!=null && nat ? w >= nat*0.9 : false;
   }
+  function samsungMode(p){
+    if(p.cat!=="Samsung") return "";
+    var nat=nativeW(p);
+    if(!nat) return "";
+    if(nat>=60) return "ชาร์จด่วนพิเศษ 3.0";
+    if(nat>=45) return "ชาร์จด่วนพิเศษ 2.0";
+    if(nat>=25) return "ชาร์จด่วนพิเศษ";
+    return "ชาร์จเร็ว";
+  }
+
   function headResult(p,w){
     if(w==null) return "ขอเช็คหน้าร้าน";
+    if(p.cat==="Samsung" && samsungMode(p)) return "ขึ้น \""+samsungMode(p)+"\" ชาร์จได้เต็มสปีด";
     if(isFull(p,w)) return "ชาร์จได้เต็มสปีดของเครื่อง";
-    if(p.cat==="Samsung" && w>=25) return "ชาร์จด่วนพิเศษ (เร็วสุดที่หัวนี้จ่ายได้)";
     return "ได้ประมาณ "+Math.floor(w)+"W";
   }
 
@@ -355,7 +365,8 @@
     var best = bestHead(p);
     var wMini = wattOn(p,"mini");
     var out = [];
-    if(native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
+    // Samsung: ร้านยืนยันว่าหัวของร้านเปิดโหมดด่วนพิเศษได้ จึงไม่ต้องบอกให้ไปใช้หัวแท้
+    if(p.cat!=="Samsung" && native && native > p.pd100 + 5) out.push("🔌 ชาร์จเต็ม "+native+"W ต้องใช้หัวแท้ของเครื่องเท่านั้นครับ");
     out.push("⚡ หัวชาร์จในรถ Blisstech");
     var wMiniN = Math.floor(wMini==null ? 0 : wMini), wAmb = Math.floor(wattOn(p,"amb"));
     // รุ่น Mini ก่อนเสมอ แล้วตามด้วย Ambient Light 55W ให้ลูกค้าเห็นทางเลือกทุกครั้ง
