@@ -271,6 +271,13 @@
   // หัวที่เล็กที่สุดที่ให้ความเร็วสูงสุดเท่าที่เครื่องนี้รับได้
   function bestHead(p){
     if(p.pd100==null) return null;
+    // Samsung: เลือกตามโหมดที่หน้าจอจะขึ้น (หัวใหญ่ = โหมดสูงกว่า)
+    if(p.cat==="Samsung"){
+      var nat=nativeW(p);
+      if(nat>=60) return HEADS[2];
+      if(nat>=45) return HEADS[1];
+      return HEADS[0];
+    }
     var top = p.pd100;
     for(var i=0;i<HEADS.length;i++){
       var w = wattOn(p,HEADS[i].key);
@@ -342,19 +349,25 @@
     var nat=nativeW(p);
     return w!=null && nat ? w >= nat*0.9 : false;
   }
-  function samsungMode(p){
+  // โหมดที่หน้าจอ Samsung จะขึ้น = ตามกำลังของ "หัวชาร์จ" และต้องไม่เกินที่เครื่องรองรับ
+  // Mini 36W -> ชาร์จด่วนพิเศษ · Ambient Light 55W -> 2.0 · Pro 100W -> 3.0
+  var SS_HEAD = {mini:25, amb:45, pro:60};
+  function samsungMode(p, headKey){
     if(p.cat!=="Samsung") return "";
-    var nat=nativeW(p);
-    if(!nat) return "";
-    if(nat>=60) return "ชาร์จด่วนพิเศษ 3.0";
-    if(nat>=45) return "ชาร์จด่วนพิเศษ 2.0";
-    if(nat>=25) return "ชาร์จด่วนพิเศษ";
+    var nat = nativeW(p); if(!nat) return "";
+    var eff = Math.min(nat, SS_HEAD[headKey] || 25);
+    if(eff>=60) return "ชาร์จด่วนพิเศษ 3.0";
+    if(eff>=45) return "ชาร์จด่วนพิเศษ 2.0";
+    if(eff>=25) return "ชาร์จด่วนพิเศษ";
     return "ชาร์จเร็ว";
   }
 
-  function headResult(p,w){
+  function headResult(p,w,headKey){
     if(w==null) return "ขอเช็คหน้าร้าน";
-    if(p.cat==="Samsung" && samsungMode(p)) return "ขึ้น \""+samsungMode(p)+"\" ชาร์จได้เต็มสปีด";
+    if(p.cat==="Samsung" && samsungMode(p,headKey)){
+      var nat=nativeW(p), full = nat && Math.min(nat, SS_HEAD[headKey]||25) >= nat*0.9;
+      return "ขึ้น \""+samsungMode(p,headKey)+"\""+(full ? " ชาร์จได้เต็มสปีด" : "");
+    }
     if(isFull(p,w)) return "ชาร์จได้เต็มสปีดของเครื่อง";
     return "ได้ประมาณ "+Math.floor(w)+"W";
   }
@@ -370,16 +383,16 @@
     out.push("⚡ หัวชาร์จในรถ Blisstech");
     var wMiniN = Math.floor(wMini==null ? 0 : wMini), wAmb = Math.floor(wattOn(p,"amb"));
     // รุ่น Mini ก่อนเสมอ แล้วตามด้วย Ambient Light 55W ให้ลูกค้าเห็นทางเลือกทุกครั้ง
-    out.push("• รุ่น Mini 36W → "+headResult(p,wMini)+
+    out.push("• รุ่น Mini 36W → "+headResult(p,wMini,"mini")+
       (best.key==="mini" && !isFull(p,wMini) ? " (เครื่องรุ่นนี้รับได้เท่านี้ครับ)" : ""));
     var ambW = wattOn(p,"amb");
-    out.push("• รุ่น Ambient Light 55W → "+headResult(p,ambW)+
+    out.push("• รุ่น Ambient Light 55W → "+headResult(p,ambW,"amb")+
       (isFull(p,ambW) ? ""
        : best.key==="amb" ? " (เร็วที่สุดสำหรับเครื่องนี้)"
        : wAmb>wMiniN ? " (เร็วกว่ารุ่น Mini ครับ)"
        : " (ได้เท่ารุ่น Mini แต่มีไฟแอมเบียนท์ในรถ)"));
-    if(best.key==="pro")
-      out.push("• รุ่น Pro 100W → "+headResult(p,wattOn(p,"pro"))+" (เร็วที่สุดสำหรับเครื่องนี้)");
+    if(best.key==="pro" || (p.cat==="Samsung" && nativeW(p)>=60))
+      out.push("• รุ่น Pro 100W → "+headResult(p,wattOn(p,"pro"),"pro")+" (เร็วที่สุดสำหรับเครื่องนี้)");
     return out;
   }
 
