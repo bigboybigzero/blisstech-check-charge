@@ -224,21 +224,25 @@
     if(k==="unk") return '<span class="fit unk">? ยังไม่ยืนยันชนิดก้าน ต้องดูที่รถก่อน</span>';
     return '<span class="fit no">✕ ก้านแบบ '+esc(c.fitting)+' · ใบ J-hook ใส่ไม่ได้</span>';
   }
-  function szBox(label,v){
-    if(v==null) return '<div class="sz none"><small>'+label+'</small><b>ไม่มี</b></div>';
+  function szBox(label,v,unk){
+    if(v==null) return '<div class="sz none"><small>'+label+'</small><b>'+(unk?"?":"ไม่มี")+'</b></div>';
     return '<div class="sz"><small>'+label+'</small><b>'+v+'<i>"</i></b></div>';
   }
   function script(c){
     var L=["🚗 "+c.brand+" "+c.model+" ("+c.gen+")", "", "📏 ขนาดใบปัดน้ำฝน",
       "• ฝั่งคนขับ "+(c.driver==null?"ขอเช็คที่รถค่ะ":c.driver+" นิ้ว"),
       "• ฝั่งผู้โดยสาร "+(c.passenger==null?"ขอเช็คที่รถค่ะ":c.passenger+" นิ้ว"),
-      "• ใบหลัง "+(c.rear==null?"ไม่มีค่ะ":c.rear+" นิ้ว"), ""];
+      "• ใบหลัง "+(c.rear==null?(c.rearUnk?"ขอเช็คที่รถค่ะ":"ไม่มีค่ะ"):c.rear+" นิ้ว"), ""];
     var k=fitsOurs(c);
     if(k==="ok") L.push("🔩 ก้านปัดเป็นแบบ J-hook", "💡 ใบปัดของ Blisstech ใส่ได้เลยค่ะ");
     else if(k==="no") L.push("🔩 ก้านปัดเป็นแบบ "+c.fitting, "💡 รุ่นนี้ใช้ใบแบบ J-hook ไม่ได้ค่ะ ต้องใช้ใบที่ตรงกับก้านแบบนี้");
     else L.push("💡 รุ่นนี้ขอดูก้านปัดที่รถก่อนนะคะ จะได้แนะนำใบที่ใส่ได้ถูกต้อง");
     // บรรทัดปิดท้าย: ขอชื่อ-ที่อยู่เฉพาะรุ่นที่ใส่ได้ ถ้าใส่ไม่ได้บอกตรง ๆ ว่ายังไม่มีของ
-    L.push("", k==="ok"
+    // ก้าน J-hook แต่ยังไม่รู้ขนาดหน้า: อย่าสัญญาว่าขนาดพอดี ขอให้ลูกค้าวัดใบเดิมมาก่อน
+    var sizeKnown = c.driver!=null && c.passenger!=null;
+    L.push("", k==="ok" && !sizeKnown
+      ? "ก้านปัดของรุ่นนี้เป็น J-hook ใบของร้านใส่ได้แน่นอนค่ะ ขอขนาดอีกนิดเดียวนะคะ วัดใบเดิมจากปลายถึงปลายแล้วแจ้งมาได้เลย พร้อม ชื่อ-ที่อยู่-เบอร์โทร เดี๋ยวจัดส่งให้ค่ะ 🙏"
+      : k==="ok"
       ? "สนใจรับไปใช้เลยไหมคะ แจ้ง ชื่อ-ที่อยู่-เบอร์โทร ได้เลยค่ะ ขนาดนี้ใส่กับรุ่นนี้ได้พอดี ไม่ต้องดัดแปลงอะไรค่ะ 🙏"
       : k==="no"
       ? "ต้องขออภัยด้วยนะคะ ตอนนี้ทางร้านมีแต่ใบแบบ J-hook และยังไม่มีอะแดปเตอร์สำหรับก้านแบบนี้ค่ะ รุ่นนี้จึงยังใส่ไม่ได้ค่ะ 🙏"
@@ -270,7 +274,7 @@
           '<div class="model">'+esc(c.model)+'</div>'+
           '<div class="tech">ขนาดใบปัด (นิ้ว)</div>'+
         '</div></div></div>'+
-        '<div class="sizes">'+szBox("ฝั่งคนขับ",inch(c.driver))+szBox("ฝั่งผู้โดยสาร",inch(c.passenger))+szBox("ใบหลัง",inch(c.rear))+'</div>'+
+        '<div class="sizes">'+szBox("ฝั่งคนขับ",inch(c.driver),true)+szBox("ฝั่งผู้โดยสาร",inch(c.passenger),true)+szBox("ใบหลัง",inch(c.rear),!!c.rearUnk)+'</div>'+
         fitBadge(c)+
         (c.note ? '<div class="note"><b>ต้องบอกลูกค้า:</b> '+esc(c.note)+'</div>' : '')+
         (c.src ? '<a class="src" href="'+esc(c.src)+'" target="_blank" rel="noopener">ที่มาข้อมูล ↗</a>' : '')+
