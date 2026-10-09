@@ -362,6 +362,26 @@
     return "ชาร์จเร็ว";
   }
 
+  // เวลาชาร์จ 0–50% คำนวณจากความจุแบตกับกำลังไฟที่เครื่องรับได้จริง
+  // ตัวหารคือกำลังเฉลี่ยช่วง 0–50% ซึ่งต่ำกว่าพีค และยิ่งหัวแรงยิ่งต่ำ (ไฟรีบไต่ขึ้นแล้วค่อยลด)
+  // ปัดขึ้นเป็นช่วง 5 นาที เพื่อไม่ให้สัญญากับลูกค้าเร็วเกินของจริง
+  function battWh(p){
+    var b = String(p.battery||"");
+    var m = b.match(/([\d.]+)\s*Wh/i);
+    if(m) return parseFloat(m[1]);
+    m = b.match(/(\d{3,5})\s*mAh/i);
+    return m ? parseInt(m[1],10) * 3.85 / 1000 : null;
+  }
+  function avgFactor(w){ return w<=20 ? 0.80 : w<=40 ? 0.72 : w<=70 ? 0.62 : 0.55 }
+  function min50(p,w){
+    var wh = battWh(p);
+    if(wh==null || !w || w<=0) return null;
+    var mins = (wh*0.5) / (w*avgFactor(w)) * 60;
+    mins = Math.ceil(mins/5)*5;
+    return mins < 10 ? 10 : mins > 240 ? null : mins;
+  }
+  function t50(p,w){ var m=min50(p,w); return m==null ? "" : " · 0–50% ราว "+m+" นาที" }
+
   function headResult(p,w,headKey){
     if(w==null) return "ขอเช็คหน้าร้าน";
     if(p.cat==="Samsung" && samsungMode(p,headKey)){
@@ -384,15 +404,15 @@
     var wMiniN = Math.floor(wMini==null ? 0 : wMini), wAmb = Math.floor(wattOn(p,"amb"));
     // รุ่น Mini ก่อนเสมอ แล้วตามด้วย Ambient Light 55W ให้ลูกค้าเห็นทางเลือกทุกครั้ง
     out.push("• รุ่น Mini 36W → "+headResult(p,wMini,"mini")+
-      (best.key==="mini" && !isFull(p,wMini) ? " (เครื่องรุ่นนี้รับได้เท่านี้ค่ะ)" : ""));
+      (best.key==="mini" && !isFull(p,wMini) ? " (เครื่องรุ่นนี้รับได้เท่านี้ค่ะ)" : "")+t50(p,wMini));
     var ambW = wattOn(p,"amb");
     out.push("• รุ่น Ambient Light 55W → "+headResult(p,ambW,"amb")+
       (isFull(p,ambW) ? ""
        : best.key==="amb" ? " (เร็วที่สุดสำหรับเครื่องนี้)"
        : wAmb>wMiniN ? " (เร็วกว่ารุ่น Mini ค่ะ)"
-       : " (ได้เท่ารุ่น Mini แต่มีไฟแอมเบียนท์ในรถ)"));
+       : " (ได้เท่ารุ่น Mini แต่มีไฟแอมเบียนท์ในรถ)")+t50(p,ambW));
     if(best.key==="pro" || (p.cat==="Samsung" && nativeW(p)>=60))
-      out.push("• รุ่น Pro 100W → "+headResult(p,wattOn(p,"pro"),"pro")+" (เร็วที่สุดสำหรับเครื่องนี้)");
+      out.push("• รุ่น Pro 100W → "+headResult(p,wattOn(p,"pro"),"pro")+" (เร็วที่สุดสำหรับเครื่องนี้)"+t50(p,wattOn(p,"pro")));
     return out;
   }
 
@@ -454,6 +474,8 @@
       L.push("• รุ่นนี้ขอเช็คกับเครื่องจริงที่หน้าร้านก่อนนะคะ จะได้แนะนำขนาดที่พอดี");
     } else {
       L.push("• หัว PD/PPS ขนาด "+w+"W ก็พอค่ะ ซื้อใหญ่กว่านี้เครื่องก็ดึงไฟได้เท่าเดิม"+(p.basis==="estimate"?" (ค่าประมาณ)":""));
+      var tw = min50(p, Math.min(w, p.pd100));
+      if(tw) L.push("• ชาร์จ 0–50% ราว "+tw+" นาที");
       if(needs5A(p)) L.push("• ต้องใช้คู่กับสายที่รองรับ 5A ถึงจะได้เต็มค่ะ");
       var nat = nativeW(p);
       if(nat && nat > p.pd100 + 5) L.push("• ถ้าอยากได้ "+nat+"W เต็มสปีด ต้องใช้หัวแท้ของเครื่องเท่านั้นค่ะ");
