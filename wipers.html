@@ -252,7 +252,10 @@
 
   var BRANDS = [], FITS = [{k:"ok",label:"ใส่ได้ (J-hook)"},{k:"no",label:"ใส่ไม่ได้"},{k:"unk",label:"ยังไม่ยืนยัน"}];
   cars.forEach(function(c){ if(BRANDS.indexOf(c.brand)<0) BRANDS.push(c.brand) });
-  BRANDS.sort();
+  // ยี่ห้อที่มีรถเยอะสุดอยู่ซ้ายสุด (โตโยต้า/ฮอนด้ามาก่อน) จำนวนเท่ากันเรียงตามตัวอักษร
+  var BRAND_N = {};
+  cars.forEach(function(c){ BRAND_N[c.brand] = (BRAND_N[c.brand]||0) + 1 });
+  BRANDS.sort(function(a,b){ return BRAND_N[b]-BRAND_N[a] || (a<b?-1:a>b?1:0) });
 
   function render(){
     var q = state.q.trim().toLowerCase();
